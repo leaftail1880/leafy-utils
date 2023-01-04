@@ -11,10 +11,10 @@ import { exec } from "./terminal.js";
  * @property {string} suffix
  */
 
-/** @type {import("./declarations.js").CustomEmitter<{before_commit: callback; after_commit: callback; commit: any}>} */
+/** @type {import("./declarations.js").CustomEmitter<{before_commit: callback; after_commit: callback; commit: {silentMode: boolean}}>} */
 export const commiter = new EventEmitter({ captureRejections: true });
 
-commiter.on("commit", async () => {
+commiter.on("commit", async ({ silentMode }) => {
 	const argv = process.argv[2] ?? "fix";
 	const match = argv.match(/^(.+)-?(.+)?$/);
 	if (!match) {
@@ -64,7 +64,13 @@ commiter.on("commit", async () => {
 		if (suffix) message += `-${suffix}`;
 
 		commiter.emit("before_commit", { version, message, type, suffix, prev_version });
-		await exec(`git commit -a --message="${message}"`);
+
+		const result = await exec(`git commit -a --message="${message}"`);
+		if (!silentMode) {
+			if (result.stderr) console.error(result.stderr);
+			console.log(result.stdout);
+		}
+
 		commiter.emit("after_commit", { version, message, type, suffix, prev_version });
 	}
 

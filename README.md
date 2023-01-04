@@ -1,9 +1,3 @@
 # Leafyutils.
 
-Simple pack for Minecraft PE anarchy server. 
-
-X-API is based on [Smelly API](https://github.com/Smelly-API/Smelly-API)
-
-This project uses many code from:
-  [Rubedo](https://github.com/smell-of-curry/rubedo)
-  [Bedrock Scripting API](https://discord.gg/wMSBmuBB)
+This package to generate files, autocommiting and many other cool stuff. Also, leafy-utils automatically adds scripts to package.json/scripts for better experience.

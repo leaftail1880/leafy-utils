@@ -29,15 +29,13 @@ export function print(...data) {
 /**
  * Executes common terminal command
  * @param {string} command Command to execute
- * @returns {Promise<void>}
+ * @returns {Promise<{stderr: string; stdout: string}>}
  */
 export async function exec(command) {
 	return new Promise((resolve, reject) => {
 		child_process.exec(command, (error, stdout, stderr) => {
-			if (stdout) console.log(stdout);
-			if (stderr) console.error(stderr);
-			if (error) return reject(error);
-			resolve();
+			if (error) reject(error);
+			else resolve({ stderr, stdout });
 		});
 	});
 }
