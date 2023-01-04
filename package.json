@@ -1,27 +1,29 @@
 {
-  "name": "leafy-utils",
-  "version": "0.0.6",
-  "description": "Just some of my scripts",
-  "main": "index.js",
-  "author": "leaftail1880",
-  "license": "ISC",
-  "type": "module",
-  "scripts": {
-    "install": "node install.js"
+ "name": "leafy-utils",
+ "version": "2.0.6",
+ "description": "Just some of my scripts",
+ "main": "exports.js",
+ "author": "leaftail1880",
+ "license": "ISC",
+ "type": "module",
+ "scripts": {
+  "install": "node install.js"
+ },
+ "files": [
+  "node_scripts",
+  "src",
+  "index.js",
+  "install.js",
+  "README.md",
+  "LICENSE",
+  "jsconfig.json"
+ ],
+ "exports": {
+  ".": {
+   "default": "./index.js"
   },
-  "files": [
-    "node_scripts",
-    "index.js",
-    "install.js",
-    "README.md",
-    "LICENSE"
-  ],
-  "exports": {
-    ".": {
-      "default": "./index.js"
-    },
-    "./*": {
-      "default": "./src/*"
-    }
+  "./*": {
+   "default": "./src/*"
   }
+ }
 }
