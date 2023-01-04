@@ -5,6 +5,7 @@ import { exec } from "./terminal.js";
 /**
  * @typedef {Object} callback
  * @property {[number, number, number]} version
+ * @property {[number, number, number]} prev_version
  * @property {string} message
  * @property {string} type
  * @property {string} suffix
@@ -48,17 +49,23 @@ commiter.on("commit", async () => {
 	const version = pack_data.version?.split(".")?.map(Number) ?? [0, 0, 0];
 
 	async function updateVersion(level = 0, prefix = null) {
+		/** @type {[number, number, number]} */
+		const prev_version = [version[0], version[1], version[2]];
+
+		for (let i = 0; i < version.length; i++) {
+			if (i > level) version[i] = 0;
+		}
 		version[level]++;
 		const strVersion = version.join(".");
 		pack_data.version = strVersion;
 
 		let message = strVersion;
 		if (prefix) message = `${prefix}: ${message}`;
-		if (suffix) message += suffix;
+		if (suffix) message += `-${suffix}`;
 
-		commiter.emit("before_commit", { version, message, type, suffix });
+		commiter.emit("before_commit", { version, message, type, suffix, prev_version });
 		await exec(`git commit -a --message="${message}"`);
-		commiter.emit("after_commit", { version, message, type, suffix });
+		commiter.emit("after_commit", { version, message, type, suffix, prev_version });
 	}
 
 	actions[argv]();

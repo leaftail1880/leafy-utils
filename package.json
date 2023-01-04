@@ -1,6 +1,6 @@
 {
  "name": "leafy-utils",
- "version": "2.0.6",
+ "version": "2.0.7",
  "description": "Just some of my scripts",
  "main": "exports.js",
  "author": "leaftail1880",
@@ -12,7 +12,7 @@
  "files": [
   "node_scripts",
   "src",
-  "index.js",
+  "exports.js",
   "install.js",
   "README.md",
   "LICENSE",
