@@ -1,16 +1,17 @@
 {
  "name": "leafy-utils",
- "version": "2.0.8",
+ "version": "2.0.11",
  "description": "Just some of my scripts",
  "main": "exports.js",
  "author": "leaftail1880",
  "license": "ISC",
  "type": "module",
  "scripts": {
-  "install": "node install.js"
+  "install": "node install.js",
+  "prepublish": "node leafs/publish.js"
  },
  "files": [
-  "node_scripts",
+  "leafs",
   "src",
   "exports.js",
   "install.js",
