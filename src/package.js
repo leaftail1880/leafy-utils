@@ -65,7 +65,7 @@ export class PackageJSON {
 	 * @returns The return value of fs.writeFile()
 	 */
 	write() {
-		return fs.writeFile(this.PACKAGE_PATH, JSON.stringify(this.DATA, null, " "));
+		return fs.writeFile(this.PACKAGE_PATH, JSON.stringify(this.DATA, null, "  "));
 	}
 
 	/**
