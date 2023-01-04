@@ -65,7 +65,12 @@ export class PackageJSON {
 	 * @returns The return value of fs.writeFile()
 	 */
 	write() {
-		return fs.writeFile(this.PACKAGE_PATH, JSON.stringify(this.DATA, null, "  "));
+		return fs.writeFile(
+			this.PACKAGE_PATH,
+			JSON.stringify(this.DATA, null, "  ")
+				// LF string end is bad for git, replacing it to CRLF
+				.replace("\n", "\n\r")
+		);
 	}
 
 	/**

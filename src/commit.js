@@ -18,7 +18,7 @@ commiter.on("commit", async () => {
 	const argv = process.argv[2] ?? "fix";
 	const match = argv.match(/^(.+)-?(.+)?$/);
 	if (!match) {
-		console.error(`Argv (${argv}) doesnt matches (.+)-?(.+)? pattern`);
+		console.error(`Argv (${argv}) doesn't matches (.+)-?(.+)? pattern`);
 		process.exit(1);
 	}
 	const [_, type, suffix] = match;
