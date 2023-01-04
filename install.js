@@ -74,9 +74,11 @@ async function addSamples() {
 	}
 
 	const sample_suffix = ".sample";
+  const sample_regexp = new RegExp(sample_suffix+"$")
 	const leaf_samples = (await fs.readdir(sample_path))
 		.filter((e) => e.endsWith(sample_suffix))
-		.map((e) => e.substring(0, -sample_suffix.length));
+		.map((e) => e.replace(sample_regexp, ''));
+
 
 	const added_samples = [];
 
@@ -88,14 +90,13 @@ async function addSamples() {
 		try {
 			orig_file = await fs.readFile(path_to_user_leaf);
 		} catch (e) {
-			//Path is dir   No path   No access to file
-			if (["EISDIR", "ENOENT", "EACCESS"].includes(e.code)) break;
+			if ("ENOENT" !== e.code) throw e
 		}
 
 		// File already exists, we dont need to make sample for it.
 		if (orig_file) continue;
 
-		await fs.writeFile(path_to_user_leaf, await fs.readFile(path_to_leaf));
+		await fs.writeFile(path_to_user_leaf, await fs.readFile(path_to_leaf + sample_suffix));
 	}
 
 	console.log("Succesfully added samples: ", added_samples);

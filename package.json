@@ -1,6 +1,6 @@
 {
   "name": "leafy-utils",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "author": "leaftail1880",
@@ -21,10 +21,7 @@
   ],
   "exports": {
     ".": {
-      "default": "./index.js"
-    },
-    "./*": {
-      "default": "./src/*"
+      "default": "./exports.js"
     }
   }
 }

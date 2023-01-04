@@ -11,7 +11,7 @@ import { exec } from "./terminal.js";
  * @property {string} suffix
  */
 
-/** @type {CustomEmitter<{before_commit: callback; after_commit: callback; commit: any}>} */
+/** @type {import("./declarations.js").CustomEmitter<{before_commit: callback; after_commit: callback; commit: any}>} */
 export const commiter = new EventEmitter({ captureRejections: true });
 
 commiter.on("commit", async () => {
