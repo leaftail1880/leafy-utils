@@ -23,9 +23,9 @@ async function main() {
 	if (path.normalize(process.argv[1]).split(path.sep).reverse()[2] !== "node_modules")
 		return console.log("User-install scripts was skipped.\n ");
 
-	await addScriptsToPackage();
-
 	await addSamples();
+
+	await addScriptsToPackage();
 
 	console.log(" ");
 	process.exit(0);
