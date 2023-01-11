@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { PackageJSON } from "./package.js";
-import { exec } from "./terminal.js";
+import { exec, execWithLog } from "./terminal.js";
 
 /**
  * @typedef {Object} callback
@@ -11,7 +11,16 @@ import { exec } from "./terminal.js";
  * @property {string} suffix
  */
 
-/** @type {import("./declarations.js").CustomEmitter<{before_commit: callback; after_commit: callback; commit: {silentMode: boolean}}>} */
+/**
+ * @typedef {Object} events
+ * @property {callback} before_commit
+ * @property {callback} after_commit
+ * @property {{silentMode: boolean}} commit
+ * @property {{silentMode: boolean}} add_commit_push
+ * @property {callback} after_add_commit_push
+ */
+
+/** @type {import("./declarations.js").CustomEmitter<events>} */
 export const commiter = new EventEmitter({ captureRejections: true });
 
 commiter.on("commit", async ({ silentMode }) => {
@@ -77,4 +86,17 @@ commiter.on("commit", async ({ silentMode }) => {
 	actions[argv]();
 
 	pack.end();
+});
+
+commiter.on("add_commit_push", async ({ silentMode }) => {
+	await execWithLog("git add ./", !silentMode);
+	/** @type {callback} */
+	let data;
+	commiter.once("after_commit", (arg) => (data = arg));
+
+	commiter.emit("commit", { silentMode });
+	commiter.once("after_commit", async () => {
+		await execWithLog("git push", !silentMode);
+		commiter.emit("after_add_commit_push", data);
+	});
 });

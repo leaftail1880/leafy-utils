@@ -2,6 +2,10 @@
 	"compilerOptions": {
 		"allowJs": true,
 		"checkJs": true,
-		"target": "ES2022"
+		"target": "ES2022",
+		"moduleResolution": "node",
+		"paths": {
+			"leafy-utils": ["./exports.js"]
+		}
 	}
 }

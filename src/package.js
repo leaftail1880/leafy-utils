@@ -69,7 +69,7 @@ export class PackageJSON {
 			this.PACKAGE_PATH,
 			JSON.stringify(this.DATA, null, "  ")
 				// LF string end is bad for git, replacing it to CRLF
-				.replace("\n", "\r\n")
+				.replace("\n", "\r")
 		);
 	}
 

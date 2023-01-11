@@ -39,3 +39,15 @@ export async function exec(command) {
 		});
 	});
 }
+/**
+ * Executes common terminal command
+ * @param {string} command Command to execute
+ * @returns {Promise<void>}
+ */
+export async function execWithLog(command, showLog = true) {
+	const info = await exec(command);
+	if (showLog) {
+		if (info.stdout) console.log(info.stdout);
+		if (info.stderr) console.log(info.stderr);
+	}
+}

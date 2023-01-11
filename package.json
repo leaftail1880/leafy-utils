@@ -1,6 +1,5 @@
-{
-  "name": "leafy-utils",
-  "version": "2.0.19",
+{  "name": "leafy-utils",
+  "version": "2.0.20",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "author": "leaftail1880",
@@ -8,8 +7,7 @@
   "type": "module",
   "scripts": {
     "install": "node install.js",
-    "commit": "node leafs/commit.js",
-    "publish": "git push"
+    "pack-publish": "node leafs/publish.js"
   },
   "files": [
     "leafs",
