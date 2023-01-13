@@ -51,3 +51,8 @@ export async function execWithLog(command, showLog = true) {
 		if (info.stderr) console.log(info.stderr);
 	}
 }
+
+export function clearLines(count = -1) {
+	process.stdout.moveCursor(0, count); // up one line
+	process.stdout.clearLine(1); // from cursor to end
+}

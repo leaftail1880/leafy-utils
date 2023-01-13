@@ -1,5 +1,5 @@
 {  "name": "leafy-utils",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "author": "leaftail1880",
@@ -22,5 +22,6 @@
     ".": {
       "default": "./exports.js"
     }
-  }
+  },
+  "dependencies": {}
 }
