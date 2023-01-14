@@ -1,5 +1,5 @@
 {  "name": "leafy-utils",
-  "version": "2.1.4",
+  "version": "2.1.5",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "types": "types/exports.js",

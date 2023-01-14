@@ -48,20 +48,16 @@ async function addScriptsToPackage() {
 	await user_package.read();
 	const data = user_package.data;
 
-	// Clear all generated scripts
-	for (const script in data.scripts) {
-		if (data.scripts[script].includes("leafs")) delete data.scripts[script];
-	}
-
+	data.scripts ??= {};
 	for (let uscript of user_scripts) {
 		const name = uscript.replace(/\.js$/, "");
-		if (name in data.scripts) {
+		const script = `node leafs/${uscript}`;
+		if (name in data.scripts && data.scripts[name] !== script) {
 			// Script was already declarated
-			console.error("Found script duplicate: ", name);
+			console.error("Found script duplicate:", name);
 			console.error(`Rename leafs/${uscript} to disable this warning`);
 			continue;
 		}
-
 		data.scripts[name] = `node leafs/${uscript}`;
 	}
 
@@ -101,7 +97,7 @@ async function addSamples() {
 		await fs.writeFile(path_to_user_leaf, await fs.readFile(path_to_leaf));
 	}
 
-	console.log("Succesfully added samples: ", added_samples);
+	console.log("Succesfully added samples:", added_samples);
 }
 
 main();
