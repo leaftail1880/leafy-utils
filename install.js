@@ -38,7 +38,7 @@ async function addScriptsToPackage() {
 		await fs.access(leafs);
 	} catch (e) {
 		if (e.code !== "ENOENT") throw e;
-		await fs.mdir(leafs);
+		await fs.mkdir(leafs);
 	}
 
 	const user_scripts = (await fs.readdir(leafs)).filter((e) => e.endsWith(".js"));
@@ -78,7 +78,7 @@ async function addSamples() {
 		await fs.access(samples_destination);
 	} catch (e) {
 		if (e.code !== "ENOENT") throw e;
-		await fs.mdir(samples_destination);
+		await fs.mkdir(samples_destination);
 	}
 
 	const leaf_samples = await fs.readdir(samples_from);
