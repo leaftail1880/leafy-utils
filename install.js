@@ -34,7 +34,12 @@ async function main() {
 async function addScriptsToPackage() {
 	const leafs = toUserPath("leafs");
 
+  try {
 	await fs.access(leafs);
+  } catch (e) {
+    if (e.code !== "ENOENT") throw e
+    await fs.mdir(leafs)
+  }
 
 	const user_scripts = (await fs.readdir(leafs)).filter((e) => e.endsWith(".js"));
 	console.log("Scripts to save:", user_scripts);

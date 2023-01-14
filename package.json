@@ -1,7 +1,8 @@
 {  "name": "leafy-utils",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Just some of my scripts",
   "main": "exports.js",
+  "types": "types/exports.js",
   "author": "leaftail1880",
   "license": "ISC",
   "type": "module",
@@ -12,6 +13,7 @@
   "files": [
     "leafs",
     "src",
+    "types",
     "exports.js",
     "install.js",
     "README.md",
@@ -20,8 +22,11 @@
   ],
   "exports": {
     ".": {
-      "default": "./exports.js"
+      "default": "./exports.js",
+      "types": "./types/exports.js"
     }
   },
-  "dependencies": {}
+  "devDependencies": {
+    "@types/node": "^18.11.18"
+  }
 }
