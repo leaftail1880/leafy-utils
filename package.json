@@ -1,5 +1,5 @@
 {  "name": "leafy-utils",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "types": "types/exports.js",
@@ -18,7 +18,7 @@
     "install.js",
     "README.md",
     "LICENSE",
-    "jsconfig.json"
+    "tsconfig.json"
   ],
   "exports": {
     ".": {
