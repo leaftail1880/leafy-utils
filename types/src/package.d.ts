@@ -10,7 +10,7 @@ export class PackageJSON {
     private PACKAGE_PATH;
     /**
      * @private
-     * @type {import("./declarations.js").Package}
+     * @type {import("./types.js").Package}
      */
     private DATA;
     /**
@@ -21,7 +21,7 @@ export class PackageJSON {
      * Returns a proxy for data, which sets modified on modify
      * @returns A proxy object.
      */
-    get data(): import("./declarations.js").Package;
+    get data(): import("./types.js").Package;
     /**
      * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
      */

@@ -1,6 +1,7 @@
 {
 	"compilerOptions": {
 		"allowJs": true,
+		"checkJs": true,
 		"target": "ES2022",
 		"moduleResolution": "node",
 		"declaration": true,
@@ -9,6 +10,6 @@
 		"declarationMap": true,
 		"allowSyntheticDefaultImports": true
 	},
-	"exclude": ["./types/**", "./leafs/**"],
+	"exclude": ["./types/**", "./leafs/**", "./install.js"],
 	"include": ["./exports.js"]
 }

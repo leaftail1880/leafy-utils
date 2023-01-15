@@ -20,7 +20,7 @@ import { exec, execWithLog } from "./terminal.js";
  * @property {callback} after_add_commit_push
  */
 
-/** @type {import("./declarations.js").CustomEmitter<events>} */
+/** @type {import("./types.js").CustomEmitter<events>} */
 export const commiter = new EventEmitter({ captureRejections: true });
 
 commiter.on("commit", async ({ silentMode }) => {

@@ -14,8 +14,8 @@
  * @property {{silentMode: boolean}} add_commit_push
  * @property {callback} after_add_commit_push
  */
-/** @type {import("./declarations.js").CustomEmitter<events>} */
-export const commiter: import("./declarations.js").CustomEmitter<events>;
+/** @type {import("./types.js").CustomEmitter<events>} */
+export const commiter: import("./types.js").CustomEmitter<events>;
 export type callback = {
     version: [number, number, number];
     prev_version: [number, number, number];

@@ -9,7 +9,7 @@ export class PackageJSON {
 
 	/**
 	 * @private
-	 * @type {import("./declarations.js").Package}
+	 * @type {import("./types.js").Package}
 	 */
 	DATA = {
 		name: "",
