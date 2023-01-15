@@ -5,12 +5,10 @@ export class PackageJSON {
     constructor(pathToPackage?: string);
     /**
      * @private
-     * @type {string}
      */
     private PACKAGE_PATH;
     /**
      * @private
-     * @type {import("./types.js").Package}
      */
     private DATA;
     /**
@@ -19,7 +17,7 @@ export class PackageJSON {
     private MODIFIED;
     /**
      * Returns a proxy for data, which sets modified on modify
-     * @returns A proxy object.
+     * @returns {import("./types.js").Package} A proxy object.
      */
     get data(): import("./types.js").Package;
     /**

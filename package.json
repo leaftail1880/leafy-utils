@@ -1,39 +1,1 @@
-{  "name": "leafy-utils",
-  "version": "2.1.6",
-  "description": "Just some of my scripts",
-  "main": "exports.js",
-  "types": "types/exports.js",
-  "author": "leaftail1880",
-  "license": "ISC",
-  "type": "module",
-  "scripts": {
-    "install": "node install.js",
-    "pack-publish": "node leafs/publish.js",
-    "sync-test": "node leafs/synctest",
-    "types": "tsc"
-  },
-  "files": [
-    "leafs",
-    "src",
-    "types",
-    "exports.js",
-    "install.js",
-    "README.md",
-    "LICENSE",
-    "tsconfig.json"
-  ],
-  "exports": {
-    ".": {
-      "default": "./exports.js",
-      "types": "./types/exports.js"
-    }
-  },
-  "devDependencies": {
-    "@types/node": "^18.11.18"
-  },
-  "dependencies": {
-    "@types/express": "^4.17.15",
-    "axios": "^1.2.2",
-    "express": "^4.18.2"
-  }
-}
+{  "name": "leafy-utils",  "version": "2.2.0",  "description": "Just some of my scripts",  "main": "exports.js",  "types": "types/exports.js",  "author": "leaftail1880",  "license": "ISC",  "type": "module",  "scripts": {    "install": "node install.js",    "pack-publish": "tsc && node leafs/publish.js",    "sync-test": "node leafs/synctest",    "types": "tsc"  },  "files": [    "leafs",    "src",    "types",    "exports.js",    "install.js",    "README.md",    "LICENSE",    "tsconfig.json"  ],  "exports": {    ".": {      "default": "./exports.js",      "types": "./types/exports.js"    }  },  "devDependencies": {    "@types/node": "^18.11.18",    "@types/express": "^4.17.15"  },  "dependencies": {    "axios": "^1.2.2",    "express": "^4.18.2"  }}

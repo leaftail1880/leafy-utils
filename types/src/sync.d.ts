@@ -1,28 +1,30 @@
-/// <reference types="node" />
-/**
- * @typedef {Object} Events
- * @property {{req: typeof IncomingMessage; res: typeof ServerResponse; incomingFromIP: string;}} message
- */
-/** @type {import("./types.js").CustomEmitter<Events>} */
-export const SyncEvents: import("./types.js").CustomEmitter<Events>;
-export namespace SyncProcess {
+export class SyncProccess {
     /**
      * Makes request to ip with message
-     * @param {{ip: string; message: string; port: number}} options
+     * @param {{ip: string; data: Record<string, any>; port: number}} options
+     * @returns {Promise<{succesfull: boolean; response: import("axios").AxiosResponse}>}
      */
-    function message({ ip, port, message }: {
+    static message({ ip, port, data }: {
         ip: string;
-        message: string;
+        data: Record<string, any>;
         port: number;
-    }): Promise<void>;
+    }): Promise<{
+        succesfull: boolean;
+        response: import("axios").AxiosResponse;
+    }>;
+    static get publicIP(): string[];
+    /**
+     * Starts the sync server on specified port
+     * @param {number} port
+     */
+    constructor(port?: number);
+    port: number;
+    server: import("express-serve-static-core").Express;
+    listen(): void;
+    /**
+     * @param {"put" | "get"} type
+     */
+    onMessageType(type: "put" | "get"): (((name: string) => any) & import("express-serve-static-core").IRouterMatcher<import("express-serve-static-core").Express, any>) | import("express-serve-static-core").IRouterMatcher<import("express-serve-static-core").Express, "put">;
+    get syncIP(): string;
 }
-export type Events = {
-    message: {
-        req: typeof IncomingMessage;
-        res: typeof ServerResponse;
-        incomingFromIP: string;
-    };
-};
-import { IncomingMessage } from "http";
-import { ServerResponse } from "http";
 //# sourceMappingURL=sync.d.ts.map

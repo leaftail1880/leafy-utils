@@ -3,13 +3,11 @@ import fs from "fs/promises";
 export class PackageJSON {
 	/**
 	 * @private
-	 * @type {string}
 	 */
-	PACKAGE_PATH;
+	PACKAGE_PATH = "";
 
 	/**
 	 * @private
-	 * @type {import("./types.js").Package}
 	 */
 	DATA = {
 		name: "",
@@ -30,7 +28,7 @@ export class PackageJSON {
 
 	/**
 	 * Returns a proxy for data, which sets modified on modify
-	 * @returns A proxy object.
+	 * @returns {import("./types.js").Package} A proxy object.
 	 */
 	get data() {
 		const checkModify = (status = true) => {
@@ -69,7 +67,7 @@ export class PackageJSON {
 			this.PACKAGE_PATH,
 			JSON.stringify(this.DATA, null, "  ")
 				// LF string end is bad for git, replacing it to CRLF
-				.replace("\n", "\r")
+				.replace(/\n/g, "\r")
 		);
 	}
 
