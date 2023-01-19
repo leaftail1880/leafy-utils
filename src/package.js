@@ -1,22 +1,14 @@
 import fs from "fs/promises";
+import { TypedBind } from "./utils.js";
 
 export class PackageJSON {
-	/**
-	 * @private
-	 */
+	/** @private */
 	PACKAGE_PATH = "";
 
-	/**
-	 * @private
-	 */
-	DATA = {
-		name: "",
-		version: "",
-	};
+	/** @private */
+	DATA = null;
 
-	/**
-	 * @private
-	 */
+	/** @private */
 	MODIFIED = false;
 
 	/**
@@ -38,6 +30,7 @@ export class PackageJSON {
 
 		return new Proxy(this.DATA, {
 			set(target, p, newValue, reciever) {
+				// New value is same as previous, do nothing
 				if (Reflect.get(target, p) == newValue) return true;
 
 				return checkModify(Reflect.set(target, p, newValue, reciever));
@@ -59,6 +52,13 @@ export class PackageJSON {
 	}
 
 	/**
+	 * Reads data if it not initialized
+	 */
+	init() {
+		if (!this.DATA) return this.read();
+	}
+
+	/**
 	 * It writes the internal saved data to the package.json file
 	 * @returns The return value of fs.writeFile()
 	 */
@@ -69,6 +69,19 @@ export class PackageJSON {
 				// LF string end is bad for git, replacing it to CRLF
 				.replace(/\n/g, "\r")
 		);
+	}
+
+	/**
+	 * Use it instead of
+	 * ```js
+	 * this.read();
+	 * this.data.val = 1;
+	 * this.save();
+	 * ```
+	 * @returns
+	 */
+	work() {
+		return { data: this.DATA, save: TypedBind(this.end, this) };
 	}
 
 	/**

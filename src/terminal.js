@@ -42,7 +42,7 @@ export async function exec(command) {
 /**
  * Executes common terminal command
  * @param {string} command Command to execute
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 export async function execWithLog(command, showLog = true) {
 	const info = await exec(command);
@@ -50,6 +50,8 @@ export async function execWithLog(command, showLog = true) {
 		if (info.stdout) console.log(info.stdout);
 		if (info.stderr) console.log(info.stderr);
 	}
+	if (info.stderr) return false;
+	else return true;
 }
 
 export function clearLines(count = -1) {

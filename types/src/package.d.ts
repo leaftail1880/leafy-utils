@@ -25,10 +25,30 @@ export class PackageJSON {
      */
     read(): Promise<void>;
     /**
+     * Reads data if it not initialized
+     */
+    init(): Promise<void>;
+    /**
      * It writes the internal saved data to the package.json file
      * @returns The return value of fs.writeFile()
      */
     write(): Promise<void>;
+    /**
+     * Use it instead of
+     * ```js
+     * this.read();
+     * this.data.val = 1;
+     * this.save();
+     * ```
+     * @returns
+     */
+    work(): {
+        data: {
+            name: string;
+            version: string;
+        };
+        save: () => Promise<void>;
+    };
     /**
      * If the file has been modified, write the changes to the file
      * @returns promise that resolves after writing file

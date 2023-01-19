@@ -1,102 +1,145 @@
-import { EventEmitter } from "events";
 import { PackageJSON } from "./package.js";
-import { exec, execWithLog } from "./terminal.js";
+import { execWithLog } from "./terminal.js";
+
+const pack_package = new PackageJSON();
 
 /**
- * @typedef {Object} callback
+ * @typedef {object} callback
  * @property {[number, number, number]} version
  * @property {[number, number, number]} prev_version
+ * @property {import("./types.js").Package} package
  * @property {string} message
  * @property {string} type
  * @property {string} suffix
  */
 
-/**
- * @typedef {Object} events
- * @property {callback} before_commit
- * @property {callback} after_commit
- * @property {{silentMode: boolean}} commit
- * @property {{silentMode: boolean}} add_commit_push
- * @property {callback} after_add_commit_push
- */
+export const Commiter = {
+	/**
+	 * Emits specified event
+	 * @param {keyof typeof events} event_name
+	 * @param {callback} arg
+	 */
+	async emit(event_name, arg) {
+		for (const EventCallback of events[event_name]) {
+			await EventCallback(arg);
+		}
+	},
+	/**
+	 * Subscribes to specified event
+	 * @param {keyof typeof events} event_name
+	 * @param {(arg: callback) => any} callback
+	 */
+	subscribe(event_name, callback) {
+		events[event_name].push(callback);
+	},
 
-/** @type {import("./types.js").CustomEmitter<events>} */
-export const commiter = new EventEmitter({ captureRejections: true });
+	/**
+	 * Runs this structure:
+	 *
+	 * ```shell
+	 * before_commit
+	 * git commit -a
+	 * after_commit
+	 * ```
+	 */
+	async commit({ silentMode = false, arg = "fix" } = {}) {
+		const match = arg.match(/^(.+)-?(.+)?$/);
+		if (!match) {
+			console.error(`Arg (${arg}) doesn't matches (.+)-?(.+)? pattern`);
+			process.exit(1);
+		}
+		const [_, type, suffix] = match;
 
-commiter.on("commit", async ({ silentMode }) => {
-	const argv = process.argv[2] ?? "fix";
-	const match = argv.match(/^(.+)-?(.+)?$/);
-	if (!match) {
-		console.error(`Argv (${argv}) doesn't matches (.+)-?(.+)? pattern`);
-		process.exit(1);
-	}
-	const [_, type, suffix] = match;
+		const actions = {
+			release: () => updateVersion(0, "Release"),
+			update: () => updateVersion(1, "Update"),
+			fix: () => updateVersion(2),
+		};
+		actions["r"] = actions.release;
+		actions["u"] = actions.update;
+		actions["f"] = actions.fix;
 
-	const actions = {
-		release() {
-			updateVersion(0, "Release");
-		},
-		update() {
-			updateVersion(1, "Update");
-		},
-		fix() {
-			updateVersion(2);
-		},
-	};
+		if (!(type in actions)) {
+			console.error(`Type (${type}) must be one of this:\n ${Object.keys(actions).join("\n ")}`);
+			process.exit(1);
+		}
 
-	if (!(type in actions)) {
-		console.error(`Type (${type}) must be one of this:\n ${Object.keys(actions).join("\n ")}`);
-		process.exit(1);
-	}
+		await pack_package.init();
 
-	const pack = new PackageJSON();
-	await pack.read();
-	const pack_data = pack.data;
-
-	/** @type {[number, number, number]} */
-	// @ts-expect-error
-	const version = pack_data.version?.split(".")?.map(Number) ?? [0, 0, 0];
-
-	async function updateVersion(level = 0, prefix = null) {
 		/** @type {[number, number, number]} */
-		const prev_version = [version[0], version[1], version[2]];
+		// @ts-expect-error
+		const version = pack_package.data.version?.split(".")?.map(Number) ?? [0, 0, 0];
 
-		for (let i = 0; i < version.length; i++) {
-			if (i > level) version[i] = 0;
+		const t = this;
+		async function updateVersion(level = 0, prefix = null) {
+			/** @type {[number, number, number]} */
+			const prev_version = [version[0], version[1], version[2]];
+
+			for (let i = 0; i < version.length; i++) {
+				if (i > level) version[i] = 0;
+			}
+			version[level]++;
+			const strVersion = version.join(".");
+			pack_package.data.version = strVersion;
+
+			let message = strVersion;
+			if (prefix) message = `${prefix}: ${message}`;
+			if (suffix) message += `-${suffix}`;
+
+			await t.emit("before_commit", { version, message, type, suffix, prev_version, package: pack_package.data });
+			await execWithLog(`git commit -a --message="${message}"`, !silentMode);
+			await t.emit("after_commit", { version, message, type, suffix, prev_version, package: pack_package.data });
 		}
-		version[level]++;
-		const strVersion = version.join(".");
-		pack_data.version = strVersion;
 
-		let message = strVersion;
-		if (prefix) message = `${prefix}: ${message}`;
-		if (suffix) message += `-${suffix}`;
+		await actions[arg]();
 
-		commiter.emit("before_commit", { version, message, type, suffix, prev_version });
+		pack_package.end();
+	},
 
-		const result = await exec(`git commit -a --message="${message}"`);
-		if (!silentMode) {
-			if (result.stderr) console.error(result.stderr);
-			console.log(result.stdout);
-		}
-
-		commiter.emit("after_commit", { version, message, type, suffix, prev_version });
-	}
-
-	actions[argv]();
-
-	pack.end();
-});
-
-commiter.on("add_commit_push", async ({ silentMode }) => {
-	await execWithLog("git add ./", !silentMode);
-	/** @type {callback} */
-	let data;
-	commiter.once("after_commit", (arg) => (data = arg));
-
-	commiter.emit("commit", { silentMode });
-	commiter.once("after_commit", async () => {
+	/**
+	 * Runs this structure:
+	 * ```shell
+	 * git add ./
+	 *   before_commit
+	 *   git commit -a
+	 *   after_commit
+	 * git push
+	 * ```
+	 *
+	 */
+	async add_commit_push({ silentMode = false, arg = "fix" } = {}) {
+		await execWithLog("git add ./", !silentMode);
+		await this.commit({ silentMode, arg });
 		await execWithLog("git push", !silentMode);
-		commiter.emit("after_add_commit_push", data);
-	});
-});
+	},
+	/**
+	 * Runs this structure:
+	 * ```shell
+	 * pre_publish
+	 * package.json["scripts"]["build"]
+	 *   git add ./
+	 *     before_commit
+	 *     git commit -a
+	 *     after_commit
+	 *   git push
+	 * ```
+	 *
+	 */
+	async publish({ silentMode = false, arg = "fix" } = {}) {
+		await pack_package.init();
+
+		if ("build" in pack_package.data.scripts) {
+			const success = await execWithLog(pack_package.data.scripts.build);
+			if (!success) return false;
+		}
+
+		await this.add_commit_push({ silentMode, arg });
+		return true;
+	},
+};
+
+const events = {
+	pre_publish: [],
+	before_commit: [],
+	after_commit: [],
+};

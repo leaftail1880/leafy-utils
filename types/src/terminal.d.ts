@@ -21,8 +21,8 @@ export function exec(command: string): Promise<{
 /**
  * Executes common terminal command
  * @param {string} command Command to execute
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
-export function execWithLog(command: string, showLog?: boolean): Promise<void>;
+export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
 export function clearLines(count?: number): void;
 //# sourceMappingURL=terminal.d.ts.map
