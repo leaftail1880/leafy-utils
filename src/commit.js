@@ -91,9 +91,9 @@ export const Commiter = {
 			await t.emit("after_commit", { version, message, type, suffix, prev_version, package: pack_package.data });
 		}
 
+		// We need to save package before it will be commited
+		this.subscribe("before_commit", () => pack_package.save());
 		await actions[arg]();
-
-		pack_package.end();
 	},
 
 	/**

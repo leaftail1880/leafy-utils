@@ -81,14 +81,14 @@ export class PackageJSON {
 	 * @returns
 	 */
 	work() {
-		return { data: this.DATA, save: TypedBind(this.end, this) };
+		return { data: this.DATA, save: TypedBind(this.save, this) };
 	}
 
 	/**
 	 * If the file has been modified, write the changes to the file
 	 * @returns promise that resolves after writing file
 	 */
-	end() {
+	save() {
 		if (this.MODIFIED) return this.write();
 	}
 }
