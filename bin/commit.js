@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { Commiter } from "../src/commit.js";
 
 async function main() {

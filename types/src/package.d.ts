@@ -3,17 +3,11 @@ export class PackageJSON {
      * @param {string} pathToPackage
      */
     constructor(pathToPackage?: string);
-    /**
-     * @private
-     */
+    /** @private */
     private PACKAGE_PATH;
-    /**
-     * @private
-     */
+    /** @private */
     private DATA;
-    /**
-     * @private
-     */
+    /** @private */
     private MODIFIED;
     /**
      * Returns a proxy for data, which sets modified on modify
@@ -43,16 +37,13 @@ export class PackageJSON {
      * @returns
      */
     work(): {
-        data: {
-            name: string;
-            version: string;
-        };
+        data: any;
         save: () => Promise<void>;
     };
     /**
      * If the file has been modified, write the changes to the file
      * @returns promise that resolves after writing file
      */
-    end(): Promise<void>;
+    save(): Promise<void>;
 }
 //# sourceMappingURL=package.d.ts.map
