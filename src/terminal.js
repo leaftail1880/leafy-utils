@@ -33,12 +33,16 @@ export function print(...data) {
  */
 export async function exec(command) {
 	return new Promise((resolve, reject) => {
-		child_process.exec(command, (error, stdout, stderr) => {
+		const proc = child_process.exec(command, (error, stdout, stderr) => {
 			if (error) reject(error);
 			else resolve({ stderr, stdout });
 		});
+
+		proc.stdout.setEncoding("utf-8");
+		proc.stderr.setEncoding("utf-8");
 	});
 }
+
 /**
  * Executes common terminal command
  * @param {string} command Command to execute
