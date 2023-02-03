@@ -1,2 +1,2 @@
 # Endings of executable scripts need to be LF
-./bin/** text eol=lf
+bin/** text eol=lf
