@@ -25,4 +25,9 @@ export function exec(command: string): Promise<{
  */
 export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
 export function clearLines(count?: number): void;
+/**
+ * @param {string} argv
+ * @param {Record<string, Function>} commands
+ */
+export function checkForArgs(argv: string, commands: Record<string, Function>): Promise<void>;
 //# sourceMappingURL=terminal.d.ts.map

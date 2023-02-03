@@ -27,6 +27,7 @@ export namespace Commiter {
     /**
      * Runs this structure:
      * ```shell
+     * package.json["scripts"]["commit"]
      * git add ./
      *   before_commit
      *   git commit -a
@@ -38,7 +39,7 @@ export namespace Commiter {
     function add_commit_push({ silentMode, arg }?: {
         silentMode?: boolean;
         arg?: string;
-    }): Promise<void>;
+    }): Promise<boolean>;
     /**
      * Runs this structure:
      * ```shell

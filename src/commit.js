@@ -99,6 +99,7 @@ export const Commiter = {
 	/**
 	 * Runs this structure:
 	 * ```shell
+	 * package.json["scripts"]["commit"]
 	 * git add ./
 	 *   before_commit
 	 *   git commit -a
@@ -108,6 +109,12 @@ export const Commiter = {
 	 *
 	 */
 	async add_commit_push({ silentMode = false, arg = "fix" } = {}) {
+		await pack_package.init();
+
+		if ("commit" in pack_package.data.scripts) {
+			const success = await execWithLog(pack_package.data.scripts.commit);
+			if (!success) return false;
+		}
 		await execWithLog("git add ./", !silentMode);
 		await this.commit({ silentMode, arg });
 		await execWithLog("git push", !silentMode);

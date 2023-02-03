@@ -62,3 +62,31 @@ export function clearLines(count = -1) {
 	process.stdout.moveCursor(0, count); // up one line
 	process.stdout.clearLine(1); // from cursor to end
 }
+
+/**
+ * @param {string} argv
+ * @param {Record<string, Function>} commands
+ */
+export async function checkForArgs(argv, commands) {
+	let parsedArgv = argv.replace(/^--/g, "") ?? argv;
+
+	commands.help ??= () => {
+		console.log(
+			`Avaible commands:\n${Object.keys(commands)
+				.map((e) => `\n   ${e} (-${e[0]}, --${e})`)
+				.join("")}\n `
+		);
+		return 0;
+	};
+
+	if (!(parsedArgv in commands))
+		parsedArgv = Object.keys(commands).find((e) => `-${e[0]}` === parsedArgv) ?? "<NOT-FOUND>";
+
+	if (!(parsedArgv in commands)) {
+		console.log("Unknown command:", parsedArgv + "\nUnparsed version:", argv);
+		process.exit(1);
+	}
+
+	const result = await commands[parsedArgv]();
+	if (result === 0) process.exit(0);
+}
