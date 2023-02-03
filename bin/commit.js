@@ -17,7 +17,7 @@ async function main() {
 		},
 	});
 
-	const success = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2] });
+	const success = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], fromBin: true });
 	if (!success) process.exit(1);
 }
 

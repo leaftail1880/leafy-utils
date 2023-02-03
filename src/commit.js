@@ -99,7 +99,6 @@ export const Commiter = {
 	/**
 	 * Runs this structure:
 	 * ```shell
-	 * package.json["scripts"]["commit"]
 	 * git add ./
 	 *   before_commit
 	 *   git commit -a
@@ -108,13 +107,15 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async add_commit_push({ silentMode = false, arg = "fix" } = {}) {
+	async add_commit_push({ silentMode = false, arg = "fix", fromBin = false } = {}) {
 		await pack_package.init();
 
-		if ("commit" in pack_package.data.scripts) {
-			const success = await execWithLog(pack_package.data.scripts.commit);
-			if (!success) return false;
+		if ("commit" in pack_package.data.scripts && fromBin) {
+			console.log("Found external script...");
+			const result = await execWithLog(`${pack_package.data.scripts.commit}${arg !== "fix" ? arg : ""}`);
+			process.exit(result ? 0 : 1);
 		}
+
 		await execWithLog("git add ./", !silentMode);
 		await this.commit({ silentMode, arg });
 		await execWithLog("git push", !silentMode);
@@ -132,15 +133,17 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async publish({ silentMode = false, arg = "fix" } = {}) {
+	async publish({ silentMode = false, arg = "fix", fromBin = false } = {}) {
 		await pack_package.init();
 
 		if ("build" in pack_package.data.scripts) {
+			console.log("Building...");
 			const success = await execWithLog(pack_package.data.scripts.build);
 			if (!success) return false;
+			console.log("Building done.");
 		}
 
-		await this.add_commit_push({ silentMode, arg });
+		await this.add_commit_push({ silentMode, arg, fromBin });
 		return true;
 	},
 };
