@@ -112,13 +112,14 @@ export const Commiter = {
 
 		if ("commit" in pack_package.data.scripts && fromBin) {
 			console.log("Found external script...");
-			const result = await execWithLog(`${pack_package.data.scripts.commit}${arg !== "fix" ? arg : ""}`);
+			const result = await execWithLog(`${pack_package.data.scripts.commit}${arg !== "fix" ? ` ${arg}` : ""}`);
 			process.exit(result ? 0 : 1);
 		}
 
 		await execWithLog("git add ./", !silentMode);
 		await this.commit({ silentMode, arg });
 		await execWithLog("git push", !silentMode);
+		return 0;
 	},
 	/**
 	 * Runs this structure:
@@ -143,8 +144,7 @@ export const Commiter = {
 			console.log("Building done.");
 		}
 
-		await this.add_commit_push({ silentMode, arg, fromBin });
-		return true;
+		return await this.add_commit_push({ silentMode, arg, fromBin });
 	},
 };
 

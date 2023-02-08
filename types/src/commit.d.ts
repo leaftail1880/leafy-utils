@@ -39,7 +39,7 @@ export namespace Commiter {
         silentMode?: boolean;
         arg?: string;
         fromBin?: boolean;
-    }): Promise<void>;
+    }): Promise<number>;
     /**
      * Runs this structure:
      * ```shell
@@ -57,7 +57,7 @@ export namespace Commiter {
         silentMode?: boolean;
         arg?: string;
         fromBin?: boolean;
-    }): Promise<boolean>;
+    }): Promise<number | false>;
 }
 export type callback = {
     version: [number, number, number];

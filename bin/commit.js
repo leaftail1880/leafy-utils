@@ -2,7 +2,7 @@
 
 import { Commiter } from "../src/commit.js";
 import { PackageJSON } from "../src/package.js";
-import { checkForArgs } from "../src/terminal.js";
+import { checkForArgs, exit } from "../src/terminal.js";
 
 async function main() {
 	await checkForArgs(process.argv[2] ?? "fix", {
@@ -17,8 +17,8 @@ async function main() {
 		},
 	});
 
-	const success = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], fromBin: true });
-	if (!success) process.exit(1);
+	const status = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], fromBin: true });
+	exit(status);
 }
 
 main();

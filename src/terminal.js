@@ -54,7 +54,9 @@ export async function execWithLog(command, showLog = true) {
 		if (info.stdout) console.log(info.stdout);
 		if (info.stderr) console.log(info.stderr);
 	}
-	if (info.stderr) return false;
+	//                 Debugger attached and disconected
+	//                 writes to stderr but this isnt error
+	if (info.stderr && !info.stderr.includes("debugger")) return false;
 	else return true;
 }
 
@@ -68,25 +70,34 @@ export function clearLines(count = -1) {
  * @param {Record<string, Function>} commands
  */
 export async function checkForArgs(argv, commands) {
-	let parsedArgv = argv.replace(/^--/g, "") ?? argv;
-
 	commands.help ??= () => {
 		console.log(
 			`Avaible commands:\n${Object.keys(commands)
-				.map((e) => `\n   ${e} (-${e[0]}, --${e})`)
+				.map((e) => `\n   ${e}`)
 				.join("")}\n `
 		);
 		return 0;
 	};
+	commands["--help"] ??= commands.help;
 
-	if (!(parsedArgv in commands))
-		parsedArgv = Object.keys(commands).find((e) => `-${e[0]}` === parsedArgv) ?? "<NOT-FOUND>";
-
-	if (!(parsedArgv in commands)) {
-		console.log("Unknown command:", parsedArgv + "\nUnparsed version:", argv);
+	if (!(argv in commands)) {
+		console.log("Unknown command:", argv);
+		console.log(
+			`Avaible commands:\n${Object.keys(commands)
+				.map((e) => `\n   ${e}`)
+				.join("")}\n `
+		);
 		process.exit(1);
 	}
 
-	const result = await commands[parsedArgv]();
-	if (result === 0) process.exit(0);
+	const result = await commands[argv]();
+	if (typeof result !== "undefined" && result !== 0) process.exit(result);
+}
+
+/**
+ * @param {number} status
+ */
+export function exit(status = 0) {
+	if (status === 0) process.exit(0);
+	process.exit(status);
 }

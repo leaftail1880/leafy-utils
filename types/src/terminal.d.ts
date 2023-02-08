@@ -30,4 +30,8 @@ export function clearLines(count?: number): void;
  * @param {Record<string, Function>} commands
  */
 export function checkForArgs(argv: string, commands: Record<string, Function>): Promise<void>;
+/**
+ * @param {number} status
+ */
+export function exit(status?: number): void;
 //# sourceMappingURL=terminal.d.ts.map
