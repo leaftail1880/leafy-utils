@@ -45,7 +45,7 @@ export const Commiter = {
 	async commit({ silentMode = false, arg = "fix" } = {}) {
 		const match = arg.match(/^(.+)-?(.+)?$/);
 		if (!match) {
-			console.error(`Arg (${arg}) doesn't matches (.+)-?(.+)? pattern`);
+			console.error(`Arg (${arg}) doesn't matches (type)-?(additional commit info)? pattern`);
 			process.exit(1);
 		}
 		const [_, type, suffix] = match;
@@ -107,12 +107,14 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async add_commit_push({ silentMode = false, arg = "fix", fromBin = false } = {}) {
+	async add_commit_push({ silentMode = false, arg = "fix", searchCommitScript = false } = {}) {
 		await pack_package.init();
 
-		if ("commit" in pack_package.data.scripts && fromBin) {
-			console.log("Found external script...");
-			const result = await execWithLog(`${pack_package.data.scripts.commit}${arg !== "fix" ? ` ${arg}` : ""}`);
+		const external_script = pack_package.data?.scripts?.commit;
+		if (external_script && searchCommitScript) {
+			console.log('Running external script (package.json["scripts"]["commit])...');
+			console.log(external_script);
+			const result = await execWithLog(`${external_script}${arg !== "fix" ? ` ${arg}` : ""}`);
 			process.exit(result ? 0 : 1);
 		}
 
@@ -134,17 +136,18 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async publish({ silentMode = false, arg = "fix", fromBin = false } = {}) {
+	async publish({ silentMode = false, arg = "fix", searchCommitScript = false } = {}) {
 		await pack_package.init();
 
 		if ("build" in pack_package.data.scripts) {
 			console.log("Building...");
+			const date = Date.now();
 			const success = await execWithLog(pack_package.data.scripts.build);
 			if (!success) return false;
-			console.log("Building done.");
+			console.log("Building done in", (Date.now() - date / 60).toFixed(2), "sec");
 		}
 
-		return await this.add_commit_push({ silentMode, arg, fromBin });
+		return await this.add_commit_push({ silentMode, arg, searchCommitScript });
 	},
 };
 

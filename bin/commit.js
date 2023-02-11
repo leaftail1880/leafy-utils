@@ -5,10 +5,16 @@ import { PackageJSON } from "../src/package.js";
 import { checkForArgs, exit } from "../src/terminal.js";
 
 async function main() {
+	const e = () => void 0;
 	await checkForArgs(process.argv[2] ?? "fix", {
-		fix() {},
-		update() {},
-		release() {},
+		f: e,
+		u: e,
+		r: e,
+		// r
+		// y
+		fix: e,
+		update: e,
+		release: e,
 		async package() {
 			const pack_package = new PackageJSON();
 			await pack_package.init();
@@ -17,7 +23,7 @@ async function main() {
 		},
 	});
 
-	const status = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], fromBin: true });
+	const status = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], searchCommitScript: true });
 	exit(status);
 }
 

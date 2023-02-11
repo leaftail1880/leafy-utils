@@ -35,10 +35,10 @@ export namespace Commiter {
      * ```
      *
      */
-    function add_commit_push({ silentMode, arg, fromBin }?: {
+    function add_commit_push({ silentMode, arg, searchCommitScript }?: {
         silentMode?: boolean;
         arg?: string;
-        fromBin?: boolean;
+        searchCommitScript?: boolean;
     }): Promise<number>;
     /**
      * Runs this structure:
@@ -53,10 +53,10 @@ export namespace Commiter {
      * ```
      *
      */
-    function publish({ silentMode, arg, fromBin }?: {
+    function publish({ silentMode, arg, searchCommitScript }?: {
         silentMode?: boolean;
         arg?: string;
-        fromBin?: boolean;
+        searchCommitScript?: boolean;
     }): Promise<number | false>;
 }
 export type callback = {
