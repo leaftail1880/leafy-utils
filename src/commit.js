@@ -144,7 +144,7 @@ export const Commiter = {
 			const date = Date.now();
 			const success = await execWithLog(pack_package.data.scripts.build);
 			if (!success) return false;
-			console.log("Building done in", (Date.now() - date / 60).toFixed(2), "sec");
+			console.log("Building done in", ((Date.now() - date) / 60).toFixed(2), "sec");
 		}
 
 		return await this.add_commit_push({ silentMode, arg, searchCommitScript });
