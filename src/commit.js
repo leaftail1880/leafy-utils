@@ -93,7 +93,6 @@ export const Commiter = {
 				prev_version,
 				package: pack_package.data,
 			});
-			console.log(info);
 			await execWithLog(`git commit -a --message="${message}"`, !silentMode);
 			await t.emit("after_commit", {
 				version,
@@ -142,7 +141,6 @@ export const Commiter = {
 		}
 
 		await execWithLog("git add ./", !silentMode);
-		console.log(info);
 		await this.commit({ silentMode, type, info });
 		await execWithLog("git push", !silentMode);
 		return 0;

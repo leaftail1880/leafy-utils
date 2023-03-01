@@ -66,15 +66,11 @@ export function clearLines(count = -1) {
 }
 
 /**
- * @param {string} argv
- * @param {Record<string, (arg?: {args: string[]; input: string}) => any>} commands
+ * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands
  */
-export async function checkForArgs(argv, commands) {
-	const argsMatch = argv
-		.match(/"[^"]+"|[^\s]+/g)
-		.map((e) => e.replace(/"(.+)"/, "$1").toString());
-
-	const command = argsMatch.shift() ?? "<empty>";
+export async function checkForArgs(commands) {
+	const [, , command, ...input] = process.argv;
+	const raw_input = input.join(" ");
 
 	commands.help ??= () => {
 		console.log(
@@ -82,7 +78,7 @@ export async function checkForArgs(argv, commands) {
 				.map((e) => `\n   ${e}`)
 				.join("")}\n `
 		);
-		return 0;
+		return 1;
 	};
 	commands["--help"] ??= commands.help;
 
@@ -97,12 +93,12 @@ export async function checkForArgs(argv, commands) {
 	}
 
 	const result = await commands[command]({
-		args: argsMatch,
-		input: argv.replace(new RegExp(`^${command} `), ""),
+		args: input,
+		raw_input,
 	});
 	if (typeof result !== "undefined" && result !== 0) process.exit(result);
 
-	return { command, args: argsMatch };
+	return { command, input, raw_input };
 }
 
 /**

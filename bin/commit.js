@@ -6,7 +6,8 @@ import { checkForArgs, exit } from "../src/terminal.js";
 
 async function main() {
 	const e = () => void 0;
-	const args = await checkForArgs(process.argv[2] ?? "fix", {
+	process.argv[2] ??= "fix";
+	const parsed = await checkForArgs({
 		f: e,
 		u: e,
 		r: e,
@@ -19,15 +20,14 @@ async function main() {
 			const pack_package = new PackageJSON();
 			await pack_package.init();
 			console.log(pack_package.data);
-			return 0;
+			return 1;
 		},
 	});
 
-	console.log(args.args);
 	const status = await Commiter.add_commit_push({
 		silentMode: false,
-		type: args.command,
-		info: args.args.join(" "),
+		type: parsed.command,
+		info: parsed.raw_input,
 		searchCommitScript: true,
 	});
 	exit(status);

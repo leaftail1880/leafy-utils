@@ -5,7 +5,8 @@ import { Commiter } from "../src/commit.js";
 import { checkForArgs } from "../src/terminal.js";
 
 async function main() {
-	const args = await checkForArgs(process.argv[2] ?? "fix", {
+	process.argv[2] ??= "fix";
+	const parsed = await checkForArgs({
 		fix() {},
 		update() {},
 		release() {},
@@ -13,14 +14,14 @@ async function main() {
 			const pack_package = new PackageJSON();
 			await pack_package.init();
 			console.log(pack_package.data);
-			return 0;
+			return 1;
 		},
 	});
 
 	const success = await Commiter.publish({
 		silentMode: false,
-		type: args.command,
-		info: args.args.join(" "),
+		type: parsed.command,
+		info: parsed.raw_input,
 		searchCommitScript: true,
 	});
 	if (success !== 0) process.exit(success);
