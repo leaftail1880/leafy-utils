@@ -20,7 +20,7 @@ async function main() {
 	const success = await Commiter.publish({
 		silentMode: false,
 		type: args.command,
-		info: args.args.join(""),
+		info: args.args.join(" "),
 		searchCommitScript: true,
 	});
 	if (success !== 0) process.exit(success);

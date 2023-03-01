@@ -23,10 +23,11 @@ async function main() {
 		},
 	});
 
+	console.log(args.args);
 	const status = await Commiter.add_commit_push({
 		silentMode: false,
 		type: args.command,
-		info: args.args.join(""),
+		info: args.args.join(" "),
 		searchCommitScript: true,
 	});
 	exit(status);
