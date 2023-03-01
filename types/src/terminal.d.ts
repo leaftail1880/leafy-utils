@@ -26,15 +26,15 @@ export function exec(command: string): Promise<{
 export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
 export function clearLines(count?: number): void;
 /**
- * @param {string} argv
- * @param {Record<string, (arg?: {args: string[]; input: string}) => any>} commands
+ * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands
  */
-export function checkForArgs(argv: string, commands: Record<string, (arg?: {
+export function checkForArgs(commands: Record<string, (arg?: {
     args: string[];
-    input: string;
+    raw_input: string;
 }) => any>): Promise<{
     command: string;
-    args: string[];
+    input: string[];
+    raw_input: string;
 }>;
 /**
  * @param {number} status
