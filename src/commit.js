@@ -10,7 +10,7 @@ const pack_package = new PackageJSON();
  * @property {import("./types.js").Package} package
  * @property {string} message
  * @property {string} type
- * @property {string} suffix
+ * @property {string} info
  */
 
 export const Commiter = {
@@ -42,16 +42,7 @@ export const Commiter = {
 	 * after_commit
 	 * ```
 	 */
-	async commit({ silentMode = false, arg = "fix" } = {}) {
-		const match = arg.match(/^(.+)-?(.+)?$/);
-		if (!match) {
-			console.error(
-				`Arg (${arg}) doesn't matches (type)-?(additional commit info)? pattern`
-			);
-			process.exit(1);
-		}
-		const [_, type, suffix] = match;
-
+	async commit({ silentMode = false, type = "fix", info = "" } = {}) {
 		const actions = {
 			release: () => updateVersion(0, "Release"),
 			update: () => updateVersion(1, "Update"),
@@ -92,13 +83,13 @@ export const Commiter = {
 
 			let message = strVersion;
 			if (prefix) message = `${prefix}: ${message}`;
-			if (suffix) message += `-${suffix}`;
+			if (info) message += ` ${info}`;
 
 			await t.emit("before_commit", {
 				version,
 				message,
 				type,
-				suffix,
+				info,
 				prev_version,
 				package: pack_package.data,
 			});
@@ -107,7 +98,7 @@ export const Commiter = {
 				version,
 				message,
 				type,
-				suffix,
+				info,
 				prev_version,
 				package: pack_package.data,
 			});
@@ -115,7 +106,7 @@ export const Commiter = {
 
 		// We need to save package before it will be commited
 		this.subscribe("before_commit", () => pack_package.save());
-		await actions[arg]();
+		await actions[type]();
 	},
 
 	/**
@@ -131,7 +122,8 @@ export const Commiter = {
 	 */
 	async add_commit_push({
 		silentMode = false,
-		arg = "fix",
+		type = "fix",
+		info = "",
 		searchCommitScript = false,
 	} = {}) {
 		await pack_package.init();
@@ -143,13 +135,13 @@ export const Commiter = {
 			);
 			console.log(external_script);
 			const result = await execWithLog(
-				`${external_script}${arg !== "fix" ? ` ${arg}` : ""}`
+				`${external_script}${type !== "fix" ? ` ${type}` : ""}`
 			);
 			process.exit(result ? 0 : 1);
 		}
 
 		await execWithLog("git add ./", !silentMode);
-		await this.commit({ silentMode, arg });
+		await this.commit({ silentMode, type, info });
 		await execWithLog("git push", !silentMode);
 		return 0;
 	},
@@ -168,7 +160,8 @@ export const Commiter = {
 	 */
 	async publish({
 		silentMode = false,
-		arg = "fix",
+		type = "fix",
+		info = "",
 		searchCommitScript = false,
 	} = {}) {
 		await pack_package.init();
@@ -185,7 +178,12 @@ export const Commiter = {
 			);
 		}
 
-		return await this.add_commit_push({ silentMode, arg, searchCommitScript });
+		return await this.add_commit_push({
+			silentMode,
+			type,
+			info,
+			searchCommitScript,
+		});
 	},
 };
 

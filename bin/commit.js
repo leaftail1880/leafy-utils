@@ -6,7 +6,7 @@ import { checkForArgs, exit } from "../src/terminal.js";
 
 async function main() {
 	const e = () => void 0;
-	await checkForArgs(process.argv[2] ?? "fix", {
+	const args = await checkForArgs(process.argv[2] ?? "fix", {
 		f: e,
 		u: e,
 		r: e,
@@ -23,7 +23,12 @@ async function main() {
 		},
 	});
 
-	const status = await Commiter.add_commit_push({ silentMode: false, arg: process.argv[2], searchCommitScript: true });
+	const status = await Commiter.add_commit_push({
+		silentMode: false,
+		type: args.command,
+		info: args.args.join(""),
+		searchCommitScript: true,
+	});
 	exit(status);
 }
 

@@ -27,9 +27,15 @@ export function execWithLog(command: string, showLog?: boolean): Promise<boolean
 export function clearLines(count?: number): void;
 /**
  * @param {string} argv
- * @param {Record<string, Function>} commands
+ * @param {Record<string, (arg?: {args: string[]; input: string}) => any>} commands
  */
-export function checkForArgs(argv: string, commands: Record<string, Function>): Promise<void>;
+export function checkForArgs(argv: string, commands: Record<string, (arg?: {
+    args: string[];
+    input: string;
+}) => any>): Promise<{
+    command: string;
+    args: string[];
+}>;
 /**
  * @param {number} status
  */

@@ -5,7 +5,7 @@ import { Commiter } from "../src/commit.js";
 import { checkForArgs } from "../src/terminal.js";
 
 async function main() {
-	await checkForArgs(process.argv[2] ?? "fix", {
+	const args = await checkForArgs(process.argv[2] ?? "fix", {
 		fix() {},
 		update() {},
 		release() {},
@@ -19,7 +19,8 @@ async function main() {
 
 	const success = await Commiter.publish({
 		silentMode: false,
-		arg: process.argv[2],
+		type: args.command,
+		info: args.args.join(""),
 		searchCommitScript: true,
 	});
 	if (success !== 0) process.exit(success);

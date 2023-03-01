@@ -20,10 +20,10 @@ export namespace Commiter {
      * after_commit
      * ```
      */
-    function commit({ silentMode, type, commitInfo }?: {
+    function commit({ silentMode, type, info }?: {
         silentMode?: boolean;
         type?: string;
-        commitInfo?: string;
+        info?: string;
     }): Promise<void>;
     /**
      * Runs this structure:
@@ -36,9 +36,10 @@ export namespace Commiter {
      * ```
      *
      */
-    function add_commit_push({ silentMode, arg, searchCommitScript, }?: {
+    function add_commit_push({ silentMode, type, info, searchCommitScript, }?: {
         silentMode?: boolean;
-        arg?: string;
+        type?: string;
+        info?: string;
         searchCommitScript?: boolean;
     }): Promise<number>;
     /**
@@ -54,9 +55,10 @@ export namespace Commiter {
      * ```
      *
      */
-    function publish({ silentMode, arg, searchCommitScript, }?: {
+    function publish({ silentMode, type, info, searchCommitScript, }?: {
         silentMode?: boolean;
-        arg?: string;
+        type?: string;
+        info?: string;
         searchCommitScript?: boolean;
     }): Promise<number | false>;
 }
@@ -66,6 +68,6 @@ export type callback = {
     package: import("./types.js").Package;
     message: string;
     type: string;
-    commitInfo: string;
+    info: string;
 };
 //# sourceMappingURL=commit.d.ts.map
