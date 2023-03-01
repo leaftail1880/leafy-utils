@@ -45,7 +45,9 @@ export const Commiter = {
 	async commit({ silentMode = false, arg = "fix" } = {}) {
 		const match = arg.match(/^(.+)-?(.+)?$/);
 		if (!match) {
-			console.error(`Arg (${arg}) doesn't matches (type)-?(additional commit info)? pattern`);
+			console.error(
+				`Arg (${arg}) doesn't matches (type)-?(additional commit info)? pattern`
+			);
 			process.exit(1);
 		}
 		const [_, type, suffix] = match;
@@ -60,7 +62,11 @@ export const Commiter = {
 		actions["f"] = actions.fix;
 
 		if (!(type in actions)) {
-			console.error(`Type (${type}) must be one of this:\n ${Object.keys(actions).join("\n ")}`);
+			console.error(
+				`Type (${type}) must be one of this:\n ${Object.keys(actions).join(
+					"\n "
+				)}`
+			);
 			process.exit(1);
 		}
 
@@ -68,7 +74,9 @@ export const Commiter = {
 
 		/** @type {[number, number, number]} */
 		// @ts-expect-error
-		const version = pack_package.data.version?.split(".")?.map(Number) ?? [0, 0, 0];
+		const version = pack_package.data.version?.split(".")?.map(Number) ?? [
+			0, 0, 0,
+		];
 
 		const t = this;
 		async function updateVersion(level = 0, prefix = null) {
@@ -86,9 +94,23 @@ export const Commiter = {
 			if (prefix) message = `${prefix}: ${message}`;
 			if (suffix) message += `-${suffix}`;
 
-			await t.emit("before_commit", { version, message, type, suffix, prev_version, package: pack_package.data });
+			await t.emit("before_commit", {
+				version,
+				message,
+				type,
+				suffix,
+				prev_version,
+				package: pack_package.data,
+			});
 			await execWithLog(`git commit -a --message="${message}"`, !silentMode);
-			await t.emit("after_commit", { version, message, type, suffix, prev_version, package: pack_package.data });
+			await t.emit("after_commit", {
+				version,
+				message,
+				type,
+				suffix,
+				prev_version,
+				package: pack_package.data,
+			});
 		}
 
 		// We need to save package before it will be commited
@@ -107,14 +129,22 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async add_commit_push({ silentMode = false, arg = "fix", searchCommitScript = false } = {}) {
+	async add_commit_push({
+		silentMode = false,
+		arg = "fix",
+		searchCommitScript = false,
+	} = {}) {
 		await pack_package.init();
 
 		const external_script = pack_package.data?.scripts?.commit;
 		if (external_script && searchCommitScript) {
-			console.log('Running external script (package.json["scripts"]["commit])...');
+			console.log(
+				'Running external script (package.json["scripts"]["commit])...'
+			);
 			console.log(external_script);
-			const result = await execWithLog(`${external_script}${arg !== "fix" ? ` ${arg}` : ""}`);
+			const result = await execWithLog(
+				`${external_script}${arg !== "fix" ? ` ${arg}` : ""}`
+			);
 			process.exit(result ? 0 : 1);
 		}
 
@@ -136,7 +166,11 @@ export const Commiter = {
 	 * ```
 	 *
 	 */
-	async publish({ silentMode = false, arg = "fix", searchCommitScript = false } = {}) {
+	async publish({
+		silentMode = false,
+		arg = "fix",
+		searchCommitScript = false,
+	} = {}) {
 		await pack_package.init();
 
 		if ("build" in pack_package.data.scripts) {
@@ -144,7 +178,11 @@ export const Commiter = {
 			const date = Date.now();
 			const success = await execWithLog(pack_package.data.scripts.build);
 			if (!success) return false;
-			console.log("Building done in", ((Date.now() - date) / 1000).toFixed(2), "sec");
+			console.log(
+				"Building done in",
+				((Date.now() - date) / 1000).toFixed(2),
+				"sec"
+			);
 		}
 
 		return await this.add_commit_push({ silentMode, arg, searchCommitScript });

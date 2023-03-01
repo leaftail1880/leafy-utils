@@ -17,7 +17,11 @@ async function main() {
 		},
 	});
 
-	const success = await Commiter.publish({ silentMode: false, arg: process.argv[2], searchCommitScript: true });
+	const success = await Commiter.publish({
+		silentMode: false,
+		arg: process.argv[2],
+		searchCommitScript: true,
+	});
 	if (success !== 0) process.exit(success);
 	spawn("yarn", ["publish", `--non-interactive`], {
 		stdio: "inherit",
