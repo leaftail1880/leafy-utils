@@ -4,7 +4,7 @@ import { execWithLog } from "./terminal.js";
 const pack_package = new PackageJSON();
 
 /**
- * @typedef {object} callback
+ * @typedef {object} CommitArgument
  * @property {[number, number, number]} version
  * @property {[number, number, number]} prev_version
  * @property {import("./types.js").Package} package
@@ -15,59 +15,20 @@ const pack_package = new PackageJSON();
 
 export const Commiter = {
 	/**
-	 * Emits specified event
-	 * @param {keyof typeof events} event_name
-	 * @param {callback} arg
-	 */
-	async emit(event_name, arg) {
-		for (const EventCallback of events[event_name]) {
-			await EventCallback(arg);
-		}
-	},
-	/**
-	 * Subscribes to specified event
-	 * @param {keyof typeof events} event_name
-	 * @param {(arg: callback) => any} callback
-	 */
-	subscribe(event_name, callback) {
-		events[event_name].push(callback);
-	},
-
-	/**
 	 * Runs this structure:
 	 *
 	 * ```shell
-	 * before_commit
+	 * scripts.precommit
 	 * git commit -a
-	 * after_commit
+	 * scripts.postcommit
 	 * ```
 	 */
-	async commit({ silentMode = false, type = "fix", info = "" } = {}) {
-		const actions = {
-			release: () => updateVersion(0, "Release"),
-			update: () => updateVersion(1, "Update"),
-			fix: () => updateVersion(2),
-		};
-		actions["r"] = actions.release;
-		actions["u"] = actions.update;
-		actions["f"] = actions.fix;
-
-		if (!(type in actions)) {
-			console.error(
-				`Type (${type}) must be one of this:\n ${Object.keys(actions).join(
-					"\n "
-				)}`
-			);
-			process.exit(1);
-		}
-
+	async commit({ type = "fix", info = "" } = {}) {
 		await pack_package.init();
 
+		const raw = pack_package.data.version?.split(".")?.map(Number) ?? [0, 0, 0];
 		/** @type {[number, number, number]} */
-		// @ts-expect-error
-		const version = pack_package.data.version?.split(".")?.map(Number) ?? [
-			0, 0, 0,
-		];
+		const version = [raw[0], raw[1], raw[2]];
 
 		const t = this;
 		async function updateVersion(level = 0, prefix = null) {
@@ -85,85 +46,67 @@ export const Commiter = {
 			if (prefix) message = `${prefix}: ${message}`;
 			if (info) message += ` ${info}`;
 
-			await t.emit("before_commit", {
+			/** @type {CommitArgument} */
+			const arg_obj = {
 				version,
 				message,
 				type,
 				info,
 				prev_version,
 				package: pack_package.data,
-			});
-			await execWithLog(`git commit -a --message="${message}"`, !silentMode);
-			await t.emit("after_commit", {
-				version,
-				message,
-				type,
-				info,
-				prev_version,
-				package: pack_package.data,
-			});
+			};
+			const arg = JSON.stringify(arg_obj);
+
+			await t.runPackageScript("precommit", arg);
+			// We need to save package before it will be commited
+			await pack_package.save();
+			await execWithLog(`git commit -a --message="${message}"`);
+			await t.runPackageScript("postcommit", arg);
 		}
 
-		// We need to save package before it will be commited
-		this.subscribe("before_commit", () => pack_package.save());
+		const actions = {
+			release: () => updateVersion(0, "Release"),
+			update: () => updateVersion(1, "Update"),
+			fix: () => updateVersion(2),
+		};
+
 		await actions[type]();
 	},
 
 	/**
 	 * Runs this structure:
 	 * ```shell
+	 * scripts.preadd
 	 * git add ./
-	 *   before_commit
+	 *   scripts.precommit
 	 *   git commit -a
-	 *   after_commit
+	 *   scripts.postcommit
 	 * git push
 	 * ```
 	 *
 	 */
-	async add_commit_push({
-		silentMode = false,
-		type = "fix",
-		info = "",
-		searchCommitScript = false,
-	} = {}) {
+	async add_commit_push({ type = "fix", info = "" } = {}) {
 		await pack_package.init();
+		await this.runPackageScript("preadd");
 
-		const external_script = pack_package.data?.scripts?.commit;
-		if (external_script && searchCommitScript) {
-			console.log(
-				'Running external script (package.json["scripts"]["commit])...'
-			);
-			console.log(external_script);
-			const result = await execWithLog(
-				`${external_script}${type !== "fix" ? ` ${type}` : ""}`
-			);
-			process.exit(result ? 0 : 1);
-		}
-
-		await execWithLog("git add ./", !silentMode);
-		await this.commit({ silentMode, type, info });
-		await execWithLog("git push", !silentMode);
-		return 0;
+		await execWithLog("git add ./");
+		await this.commit({ type, info });
+		await execWithLog("git push");
 	},
 	/**
 	 * Runs this structure:
 	 * ```shell
-	 * pre_publish
-	 * package.json["scripts"]["build"]
+	 * scripts.build
+	 *   scripts.preadd
 	 *   git add ./
-	 *     before_commit
+	 *     scripts.precommit
 	 *     git commit -a
-	 *     after_commit
+	 *     scripts.postcommit
 	 *   git push
 	 * ```
 	 *
 	 */
-	async publish({
-		silentMode = false,
-		type = "fix",
-		info = "",
-		searchCommitScript = false,
-	} = {}) {
+	async build() {
 		await pack_package.init();
 
 		if ("build" in pack_package.data.scripts) {
@@ -177,18 +120,16 @@ export const Commiter = {
 				"sec"
 			);
 		}
-
-		return await this.add_commit_push({
-			silentMode,
-			type,
-			info,
-			searchCommitScript,
-		});
 	},
-};
+	/**
+	 * Runs script from package.json
+	 * @param {string} scriptName Script to run
+	 * @param {string} args Additional argument to script
+	 */
+	runPackageScript(scriptName, args = "", log = true) {
+		const scripts = pack_package.data?.scripts;
+		if (typeof scripts !== "object" || !(scriptName in scripts)) return;
 
-const events = {
-	pre_publish: [],
-	before_commit: [],
-	after_commit: [],
+		return execWithLog(`${scripts[scriptName]} ${args}`, log);
+	},
 };

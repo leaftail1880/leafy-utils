@@ -68,43 +68,44 @@ export function clearLines(count = -1) {
 /**
  * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands
  */
-export async function checkForArgs(commands) {
-	const [, , command, ...input] = process.argv;
+export async function checkForArgs(
+	commands,
+	{ commandList = [], defaultCommand = "" } = {}
+) {
+	let [, , command, ...input] = process.argv;
 	const raw_input = input.join(" ");
 
-	commands.help ??= () => {
+	function help() {
 		console.log(
 			`Avaible commands:\n${Object.keys(commands)
+				.concat(commandList)
 				.map((e) => `\n   ${e}`)
 				.join("")}\n `
 		);
 		return 1;
-	};
-	commands["--help"] ??= commands.help;
-
-	if (!(command in commands)) {
-		console.log("Unknown command:", command);
-		console.log(
-			`Avaible commands:\n${Object.keys(commands)
-				.map((e) => `\n   ${e}`)
-				.join("")}\n `
-		);
-		process.exit(1);
 	}
 
-	const result = await commands[command]({
-		args: input,
-		raw_input,
-	});
-	if (typeof result !== "undefined" && result !== 0) process.exit(result);
+	if (defaultCommand) command ??= defaultCommand;
+	commands.help ??= help;
+	commands["--help"] ??= help;
+
+	/**
+	 * If value is in executable command list
+	 */
+	const isCMD = command in commands;
+
+	if (!isCMD && !commandList.includes(command)) {
+		console.log("Unknown command:", command);
+		process.exit(commands.help());
+	}
+
+	if (isCMD) {
+		const result = await commands[command]({
+			args: input,
+			raw_input,
+		});
+		if (result !== "0" && typeof result === "number") process.exit(result);
+	}
 
 	return { command, input, raw_input };
-}
-
-/**
- * @param {number} status
- */
-export function exit(status = 0) {
-	if (status === 0) process.exit(0);
-	process.exit(status);
 }

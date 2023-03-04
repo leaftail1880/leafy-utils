@@ -31,13 +31,12 @@ export function clearLines(count?: number): void;
 export function checkForArgs(commands: Record<string, (arg?: {
     args: string[];
     raw_input: string;
-}) => any>): Promise<{
+}) => any>, { commandList, defaultCommand }?: {
+    commandList?: any[];
+    defaultCommand?: string;
+}): Promise<{
     command: string;
     input: string[];
     raw_input: string;
 }>;
-/**
- * @param {number} status
- */
-export function exit(status?: number): void;
 //# sourceMappingURL=terminal.d.ts.map
