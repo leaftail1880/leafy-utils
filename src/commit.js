@@ -28,9 +28,9 @@ export const Commiter = {
 	 * Runs this structure:
 	 *
 	 * ```shell
-	 * scripts.precommit
+	 * this.precommit
 	 * git commit -a
-	 * scripts.postcommit
+	 * this.postcommit
 	 * ```
 	 * @readonly
 	 */
@@ -88,9 +88,9 @@ export const Commiter = {
 	 * ```shell
 	 * scripts.preadd
 	 * git add ./
-	 *   scripts.precommit
+	 *   this.precommit
 	 *   git commit -a
-	 *   scripts.postcommit
+	 *   thus.postcommit
 	 * git push
 	 * ```
 	 * @readonly
@@ -108,9 +108,9 @@ export const Commiter = {
 	 * scripts.build
 	 *   scripts.preadd
 	 *   git add ./
-	 *     scripts.precommit
+	 *     this.precommit
 	 *     git commit -a
-	 *     scripts.postcommit
+	 *     this.postcommit
 	 *   git push
 	 * ```
 	 * @readonly
@@ -148,16 +148,41 @@ export const Commiter = {
 
 		return execWithLog(`${script} ${arg ? arg : ""}`, log);
 	},
-	async checkForCommitArgs() {
+	async checkForCommitArgs(helpText = "Commits dir where it was called.") {
+		const commandList = ["fix", "update", "release"];
 		const parsed = await checkForArgs(
 			{
+				help() {
+					console.log(
+						`${helpText}
+
+Usage:
+
+  [option?] [info?]
+
+Options:
+  
+  fix - Default commit (0.0.0 -> 0.0.1 [info])
+
+  update - Run this if you adding something new. (0.0.0 -> Update: 0.1.0 [info])
+
+  release - Run this on breaking changes. (0.0.0 -> Release: 1.0.0 [info])
+
+  package - Prints current package.json and exites.
+
+  --help | help - Prints this and exites.
+
+`
+					);
+					process.exit();
+				},
 				async package() {
 					await pack_package.init();
 					console.log(pack_package.data);
-					return 1;
+					process.exit(0);
 				},
 			},
-			{ commandList: ["fix", "update", "release"], defaultCommand: "fix" }
+			{ commandList, defaultCommand: "fix" }
 		);
 
 		return { type: parsed.command, info: parsed.raw_input };

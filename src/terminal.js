@@ -66,7 +66,7 @@ export function clearLines(count = -1) {
 }
 
 /**
- * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => number | Promise<number>>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
+ * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
  */
 export async function checkForArgs(
 	commands,
@@ -82,7 +82,7 @@ export async function checkForArgs(
 				.map((e) => `\n   ${e}`)
 				.join("")}\n `
 		);
-		return 1;
+		process.exit(0);
 	}
 
 	if (defaultCommand) command ??= defaultCommand;
@@ -100,11 +100,10 @@ export async function checkForArgs(
 	}
 
 	if (isCMD) {
-		const result = await commands[command]({
+		await commands[command]({
 			args: input,
 			raw_input,
 		});
-		if (typeof result === "number" && result !== 0) process.exit(result);
 	}
 
 	return { command, input, raw_input };

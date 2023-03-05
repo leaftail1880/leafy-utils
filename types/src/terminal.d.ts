@@ -26,12 +26,12 @@ export function exec(command: string): Promise<{
 export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
 export function clearLines(count?: number): void;
 /**
- * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => number | Promise<number>>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
+ * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
  */
 export function checkForArgs(commands: Record<string, (arg?: {
     args: string[];
     raw_input: string;
-}) => number | Promise<number>>, { commandList, defaultCommand }?: {
+}) => any>, { commandList, defaultCommand }?: {
     commandList?: any[];
     defaultCommand?: string;
 }): Promise<{
