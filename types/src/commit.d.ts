@@ -1,5 +1,15 @@
 export namespace Commiter {
     /**
+     * Replace this function if you want to do something before commit
+     * @param {CommitArgument} arg
+     */
+    export function precommit(arg: CommitArgument): Promise<void>;
+    /**
+     * Replace this function if you want to do something after commit
+     * @param {CommitArgument} arg
+     */
+    export function postcommit(arg: CommitArgument): Promise<void>;
+    /**
      * Runs this structure:
      *
      * ```shell
@@ -7,8 +17,9 @@ export namespace Commiter {
      * git commit -a
      * scripts.postcommit
      * ```
+     * @readonly
      */
-    function commit({ type, info }?: {
+    export function commit({ type, info }?: {
         type?: string;
         info?: string;
     }): Promise<void>;
@@ -22,9 +33,9 @@ export namespace Commiter {
      *   scripts.postcommit
      * git push
      * ```
-     *
+     * @readonly
      */
-    function add_commit_push({ type, info }?: {
+    export function add_commit_push({ type, info }?: {
         type?: string;
         info?: string;
     }): Promise<void>;
@@ -39,15 +50,21 @@ export namespace Commiter {
      *     scripts.postcommit
      *   git push
      * ```
-     *
+     * @readonly
      */
-    function build(): Promise<boolean>;
+    export function build(): Promise<boolean>;
     /**
      * Runs script from package.json
      * @param {string} scriptName Script to run
-     * @param {string} args Additional argument to script
+     * @param {string[] | string} args Args to add
+     * @readonly
      */
-    function runPackageScript(scriptName: string, args?: string, log?: boolean): Promise<boolean>;
+    export function runPackageScript(scriptName: string, args?: string | string[], log?: boolean): false | Promise<boolean>;
+    export function checkForCommitArgs(): Promise<{
+        type: string;
+        info: string;
+    }>;
+    export { pack_package };
 }
 export type CommitArgument = {
     version: [number, number, number];
@@ -57,4 +74,7 @@ export type CommitArgument = {
     type: string;
     info: string;
 };
+declare const pack_package: PackageJSON;
+import { PackageJSON } from "./package.js";
+export {};
 //# sourceMappingURL=commit.d.ts.map

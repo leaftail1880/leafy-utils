@@ -1,5 +1,5 @@
 import { PackageJSON } from "./package.js";
-import { execWithLog } from "./terminal.js";
+import { checkForArgs, execWithLog } from "./terminal.js";
 
 const pack_package = new PackageJSON();
 
@@ -15,6 +15,16 @@ const pack_package = new PackageJSON();
 
 export const Commiter = {
 	/**
+	 * Replace this function if you want to do something before commit
+	 * @param {CommitArgument} arg
+	 */
+	async precommit(arg) {},
+	/**
+	 * Replace this function if you want to do something after commit
+	 * @param {CommitArgument} arg
+	 */
+	async postcommit(arg) {},
+	/**
 	 * Runs this structure:
 	 *
 	 * ```shell
@@ -22,6 +32,7 @@ export const Commiter = {
 	 * git commit -a
 	 * scripts.postcommit
 	 * ```
+	 * @readonly
 	 */
 	async commit({ type = "fix", info = "" } = {}) {
 		await pack_package.init();
@@ -55,13 +66,12 @@ export const Commiter = {
 				prev_version,
 				package: pack_package.data,
 			};
-			const arg = JSON.stringify(arg_obj);
 
-			await t.runPackageScript("precommit", arg);
+			await t.precommit(arg_obj);
 			// We need to save package before it will be commited
 			await pack_package.save();
 			await execWithLog(`git commit -a --message="${message}"`);
-			await t.runPackageScript("postcommit", arg);
+			await t.postcommit(arg_obj);
 		}
 
 		const actions = {
@@ -83,11 +93,10 @@ export const Commiter = {
 	 *   scripts.postcommit
 	 * git push
 	 * ```
-	 *
+	 * @readonly
 	 */
 	async add_commit_push({ type = "fix", info = "" } = {}) {
 		await pack_package.init();
-		await this.runPackageScript("preadd");
 
 		await execWithLog("git add ./");
 		await this.commit({ type, info });
@@ -104,7 +113,7 @@ export const Commiter = {
 	 *     scripts.postcommit
 	 *   git push
 	 * ```
-	 *
+	 * @readonly
 	 */
 	async build() {
 		await pack_package.init();
@@ -124,12 +133,34 @@ export const Commiter = {
 	/**
 	 * Runs script from package.json
 	 * @param {string} scriptName Script to run
-	 * @param {string} args Additional argument to script
+	 * @param {string[] | string} args Args to add
+	 * @readonly
 	 */
-	runPackageScript(scriptName, args = "", log = true) {
+	runPackageScript(scriptName, args = [], log = true) {
 		const scripts = pack_package.data?.scripts;
-		if (typeof scripts !== "object" || !(scriptName in scripts)) return;
+		if (typeof scripts !== "object" || !(scriptName in scripts)) return false;
 
-		return execWithLog(`${scripts[scriptName]} ${args}`, log);
+		const script = scripts[scriptName];
+		const arg =
+			args && Array.isArray(args)
+				? args.map((e) => (e.includes(" ") ? `"${e}"` : e)).join(" ")
+				: args;
+
+		return execWithLog(`${script} ${arg ? arg : ""}`, log);
 	},
+	async checkForCommitArgs() {
+		const parsed = await checkForArgs(
+			{
+				async package() {
+					await pack_package.init();
+					console.log(pack_package.data);
+					return 1;
+				},
+			},
+			{ commandList: ["fix", "update", "release"], defaultCommand: "fix" }
+		);
+
+		return { type: parsed.command, info: parsed.raw_input };
+	},
+	pack_package,
 };
