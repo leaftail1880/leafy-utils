@@ -24,7 +24,7 @@ export async function fordir(options) {
 	inputPath = path.join(inputPath);
 	outputPath = path.join(outputPath);
 
-	/** @type {{$path: string; result: fileparseReturn}[]} */
+	/** @type {{finalPath: string; data: string|Buffer, fileName: string}[]} */
 	const writeQuene = [];
 
 	/**
@@ -44,32 +44,33 @@ export async function fordir(options) {
 	 */
 	async function getFiles(path) {
 		const files = await fs.readdir(path);
-		log("Files on", path + ":", files);
+		log(" ");
+		log("D:", path);
+		log(files);
+		log(" ");
 		return files;
 	}
 
 	/**
-	 *
 	 * @param {string} givenpath
 	 * @param {string} filename
-	 * @returns
+	 * @param {string} fullpath
 	 */
-	async function workWithFile(givenpath, filename) {
-		const fullpath = path.join(givenpath, filename);
-		const buffer = await fs.readFile(fullpath);
-		log("Working with file:", fullpath);
+	async function workWithFile(givenpath, filename, fullpath) {
 		const file = path.parse(fullpath);
-		const ext = file.ext;
-		if (!(ext in extensions)) return;
+		if (!(file.ext in extensions)) return;
 
-		givenpath = path.join(path.join(givenpath).replace(new RegExp(`^${inputPath}`), ""));
-		const result = await extensions[ext](buffer, givenpath, filename);
-		if (!("modified" in result)) result.modified = true;
+		const buffer = await fs.readFile(fullpath);
+		log("F:", path.join(givenpath, filename));
+
+		const result = await extensions[file.ext](buffer, givenpath, filename);
+		result.modified ??= true;
 
 		if (result.modified)
 			writeQuene.push({
-				$path: givenpath,
-				result,
+				finalPath: givenpath,
+				data: result.data,
+				fileName: result.filename ?? filename,
 			});
 	}
 
@@ -80,26 +81,26 @@ export async function fordir(options) {
 	async function workWithDir(additionalPath) {
 		const files = await getFiles(additionalPath);
 
-		for (const filename of files)
-			try {
-				await workWithFile(additionalPath, filename);
-			} catch (e) {
-				if (e.code === "EISDIR") {
-					// Error code EISDIR mean that this is dir
-					await workWithDir(path.join(additionalPath, filename));
-				} else {
-					throw e;
-				}
+		for (const filename of files) {
+			const fullpath = path.join(additionalPath, filename);
+
+			if ((await fs.lstat(fullpath)).isFile()) {
+				await workWithFile(
+					path.join(path.join(additionalPath).replace(inputPath, "")),
+					filename,
+					fullpath
+				);
+			} else {
+				await workWithDir(path.join(additionalPath, filename));
 			}
+		}
 	}
 
 	await workWithDir(inputPath);
 
-	for (const {
-		result: { data, filename },
-		$path,
-	} of writeQuene)
-		await writeFile(data, path.join(outputPath, $path), filename);
+	for (const { data, fileName, finalPath } of writeQuene) {
+		await writeFile(data, path.join(outputPath, finalPath), fileName);
+	}
 
 	/**
 	 *
