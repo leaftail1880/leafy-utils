@@ -133,7 +133,7 @@ export const Commiter = {
 	/**
 	 * Runs script from package.json
 	 * @param {string} scriptName Script to run
-	 * @param {string[] | string} args Args to add
+	 * @param {string[]} args Args to add
 	 * @readonly
 	 */
 	runPackageScript(scriptName, args = [], log = true) {
@@ -141,10 +141,7 @@ export const Commiter = {
 		if (typeof scripts !== "object" || !(scriptName in scripts)) return false;
 
 		const script = scripts[scriptName];
-		const arg =
-			args && Array.isArray(args)
-				? args.map((e) => (e.includes(" ") ? `"${e}"` : e)).join(" ")
-				: args;
+		const arg = args.map((e) => (e.includes(" ") ? `"${e}"` : e)).join(" ");
 
 		return execWithLog(`${script} ${arg ? arg : ""}`, log);
 	},
