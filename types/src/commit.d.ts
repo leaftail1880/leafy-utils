@@ -56,10 +56,10 @@ export namespace Commiter {
     /**
      * Runs script from package.json
      * @param {string} scriptName Script to run
-     * @param {string[] | string} args Args to add
+     * @param {string[]} args Args to add
      * @readonly
      */
-    export function runPackageScript(scriptName: string, args?: string | string[], log?: boolean): false | Promise<boolean>;
+    export function runPackageScript(scriptName: string, args?: string[], log?: boolean): false | Promise<boolean>;
     export function checkForCommitArgs(helpText?: string): Promise<{
         type: string;
         info: string;

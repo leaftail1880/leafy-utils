@@ -3,6 +3,9 @@
  * @property {string} inputPath
  * @property {string} outputPath
  * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>} extensions
+ * @property {string[]} ignoreExtensions
+ * @property {string[]} ignoreFolders
+ * @property {string[]} ignoreFiles
  * @property {boolean=} [silentMode=false]
  */
 /**
@@ -19,6 +22,9 @@ export type dirOptions = {
     inputPath: string;
     outputPath: string;
     extensions: Record<string, (buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>>;
+    ignoreExtensions: string[];
+    ignoreFolders: string[];
+    ignoreFiles: string[];
     silentMode?: boolean | undefined;
 };
 export type fileparseReturn = {
