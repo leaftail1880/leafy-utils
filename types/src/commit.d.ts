@@ -52,19 +52,19 @@ export namespace Commiter {
      * ```
      * @readonly
      */
-    export function build(): Promise<boolean>;
+    export function build(): Promise<void>;
     /**
      * Runs script from package.json
      * @param {string} scriptName Script to run
      * @param {string[]} args Args to add
      * @readonly
      */
-    export function runPackageScript(scriptName: string, args?: string[], log?: boolean): false | Promise<boolean>;
+    export function runPackageScript(scriptName: string, args?: string[], log?: boolean): Promise<boolean>;
     export function checkForCommitArgs(helpText?: string): Promise<{
         type: string;
         info: string;
     }>;
-    export { pack_package };
+    export { PACKAGE as package };
 }
 export type CommitArgument = {
     version: [number, number, number];
@@ -74,7 +74,7 @@ export type CommitArgument = {
     type: string;
     info: string;
 };
-declare const pack_package: PackageJSON;
+declare const PACKAGE: PackageJSON;
 import { PackageJSON } from "./package.js";
 export {};
 //# sourceMappingURL=commit.d.ts.map

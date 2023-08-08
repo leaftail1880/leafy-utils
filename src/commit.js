@@ -1,7 +1,7 @@
 import { PackageJSON } from "./package.js";
-import { checkForArgs, execWithLog } from "./terminal.js";
+import { checkForArgs, execWithLog, runs } from "./terminal.js";
 
-const pack_package = new PackageJSON();
+const PACKAGE = new PackageJSON();
 
 /**
  * @typedef {object} CommitArgument
@@ -35,23 +35,37 @@ export const Commiter = {
 	 * @readonly
 	 */
 	async commit({ type = "fix", info = "" } = {}) {
-		await pack_package.init();
+		await PACKAGE.init();
 
-		const raw = pack_package.data.version?.split(".")?.map(Number) ?? [0, 0, 0];
-		/** @type {[number, number, number]} */
-		const version = [raw[0], raw[1], raw[2]];
+		const rawVersion = PACKAGE.data.version?.split(".")?.map(Number) ?? [
+			0, 0, 0,
+		];
 
-		const t = this;
+		/**
+		 * @type {[number, number, number]}
+		 */
+		const version = [rawVersion[0], rawVersion[1], rawVersion[2]];
+		const actions = {
+			release: () => updateVersion(0, "Release"),
+			update: () => updateVersion(1, "Update"),
+			fix: () => updateVersion(2),
+		};
+
+		await actions[type]();
+
 		async function updateVersion(level = 0, prefix = null) {
-			/** @type {[number, number, number]} */
+			/**
+			 * @type {[number, number, number]}
+			 */
 			const prev_version = [version[0], version[1], version[2]];
 
 			for (let i = 0; i < version.length; i++) {
+				if (i === level) version[i]++;
 				if (i > level) version[i] = 0;
 			}
-			version[level]++;
+
 			const strVersion = version.join(".");
-			pack_package.data.version = strVersion;
+			PACKAGE.data.version = strVersion;
 
 			let message = strVersion;
 			if (prefix) message = `${prefix}: ${message}`;
@@ -64,23 +78,15 @@ export const Commiter = {
 				type,
 				info,
 				prev_version,
-				package: pack_package.data,
+				package: PACKAGE.data,
 			};
 
-			await t.precommit(arg_obj);
+			await Commiter.precommit(arg_obj);
 			// We need to save package before it will be commited
-			await pack_package.save();
-			await execWithLog(`git commit -a --message="${message}"`);
-			await t.postcommit(arg_obj);
+			await PACKAGE.save();
+			await runs(`git`, ["commit", "-a", '--message="${message}"']);
+			await Commiter.postcommit(arg_obj);
 		}
-
-		const actions = {
-			release: () => updateVersion(0, "Release"),
-			update: () => updateVersion(1, "Update"),
-			fix: () => updateVersion(2),
-		};
-
-		await actions[type]();
 	},
 
 	/**
@@ -96,11 +102,11 @@ export const Commiter = {
 	 * @readonly
 	 */
 	async add_commit_push({ type = "fix", info = "" } = {}) {
-		await pack_package.init();
+		await PACKAGE.init();
 
-		await execWithLog("git add ./");
+		await runs("git", ["add", "./"]);
 		await this.commit({ type, info });
-		await execWithLog("git push");
+		await runs("git", ["push"]);
 	},
 	/**
 	 * Runs this structure:
@@ -116,18 +122,13 @@ export const Commiter = {
 	 * @readonly
 	 */
 	async build() {
-		await pack_package.init();
+		await PACKAGE.init();
 
-		if ("build" in pack_package.data.scripts) {
+		if ("build" in (PACKAGE.data.scripts ?? {})) {
 			console.log("Building...");
-			const date = Date.now();
-			const success = await execWithLog(pack_package.data.scripts.build);
-			if (!success) return false;
-			console.log(
-				"Building done in",
-				((Date.now() - date) / 1000).toFixed(2),
-				"sec"
-			);
+			const start = Date.now();
+			await execWithLog(PACKAGE.data.scripts.build);
+			console.log("Done in", ((Date.now() - start) / 1000).toFixed(2), "sec");
 		}
 	},
 	/**
@@ -136,9 +137,11 @@ export const Commiter = {
 	 * @param {string[]} args Args to add
 	 * @readonly
 	 */
-	runPackageScript(scriptName, args = [], log = true) {
-		const scripts = pack_package.data?.scripts;
-		if (typeof scripts !== "object" || !(scriptName in scripts)) return false;
+	async runPackageScript(scriptName, args = [], log = true) {
+		await PACKAGE.init();
+		const scripts = PACKAGE.data?.scripts;
+		if (!scripts || typeof scripts !== "object" || !(scriptName in scripts))
+			return false;
 
 		const script = scripts[scriptName];
 		const arg = args.map((e) => (e.includes(" ") ? `"${e}"` : e)).join(" ");
@@ -174,8 +177,8 @@ Options:
 					process.exit();
 				},
 				async package() {
-					await pack_package.init();
-					console.log(pack_package.data);
+					await PACKAGE.init();
+					console.log(PACKAGE.data);
 					process.exit(0);
 				},
 			},
@@ -184,5 +187,5 @@ Options:
 
 		return { type: parsed.command, info: parsed.raw_input };
 	},
-	pack_package,
+	package: PACKAGE,
 };

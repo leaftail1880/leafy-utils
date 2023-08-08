@@ -6,9 +6,9 @@ import path from "path";
  * @property {string} inputPath
  * @property {string} outputPath
  * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>} extensions
- * @property {string[]} ignoreExtensions
- * @property {string[]} ignoreFolders
- * @property {string[]} ignoreFiles
+ * @property {string[]} [ignoreExtensions]
+ * @property {string[]} [ignoreFolders]
+ * @property {string[]} [ignoreFiles]
  * @property {boolean=} [silentMode=false]
  */
 
@@ -36,8 +36,7 @@ export async function fordir(options) {
 	 * @returns
 	 */
 	function log(...messages) {
-		if (silentMode) return;
-		console.log(...messages);
+		if (!silentMode) console.log(...messages);
 	}
 
 	/**
@@ -62,8 +61,8 @@ export async function fordir(options) {
 	async function workWithFile(givenpath, filename, fullpath) {
 		const file = path.parse(fullpath);
 		if (
-			(!(file.ext in extensions) && !options.ignoreExtensions.length) ||
-			options.ignoreExtensions.includes(file.ext)
+			(!(file.ext in extensions) && !options.ignoreExtensions) ||
+			options.ignoreExtensions?.includes(file.ext)
 		)
 			return;
 
@@ -92,14 +91,14 @@ export async function fordir(options) {
 			const fullpath = path.join(additionalPath, filename);
 
 			if ((await fs.lstat(fullpath)).isFile()) {
-			  if (options.ignoreFiles.includes(filename)) continue
+			  if (options.ignoreFiles?.includes(filename)) continue
 				await workWithFile(
 					path.join(path.join(additionalPath).replace(inputPath, "")),
 					filename,
 					fullpath
 				);
 			} else {
-				if (options.ignoreFolders.includes(filename)) continue
+				if (options.ignoreFolders?.includes(filename)) continue
 				await workWithDir(path.join(additionalPath, filename));
 			}
 		}

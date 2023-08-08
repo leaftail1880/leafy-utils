@@ -5,7 +5,7 @@
  */
 export function input(text?: string): Promise<string>;
 /**
- * Works same as console.lpg but without \n every new line
+ * Works same as console.log but without \n every new line
  * @param {...any} data See **util.format()** for more info
  */
 export function print(...data: any[]): void;
@@ -24,6 +24,14 @@ export function exec(command: string): Promise<{
  * @returns {Promise<boolean>}
  */
 export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
+/**
+ * @param {string} command
+ * @param {string[]} args
+ */
+export function runs(command: string, args: string[]): Promise<any>;
+/**
+ * @deprecated Unusable, bagged and should be removed
+ */
 export function clearLines(count?: number): void;
 /**
  * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.

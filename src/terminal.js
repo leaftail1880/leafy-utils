@@ -1,4 +1,4 @@
-import child_process from "child_process";
+import child_process, { spawn } from "child_process";
 import util from "util";
 
 /**
@@ -19,7 +19,7 @@ export function input(text = null) {
 }
 
 /**
- * Works same as console.lpg but without \n every new line
+ * Works same as console.log but without \n every new line
  * @param {...any} data See **util.format()** for more info
  */
 export function print(...data) {
@@ -60,6 +60,21 @@ export async function execWithLog(command, showLog = true) {
 	else return true;
 }
 
+/**
+ * @param {string} command
+ * @param {string[]} args
+ */
+export function runs(command, args) {
+	return new Promise((resolve, reject) => {
+		const process = spawn(command, args, { stdio: "inherit", shell: true });
+		process.on("exit", resolve);
+		process.on("error", reject);
+	});
+}
+
+/**
+ * @deprecated Unusable, bagged and should be removed
+ */
 export function clearLines(count = -1) {
 	process.stdout.moveCursor(0, count); // up one line
 	process.stdout.clearLine(1); // from cursor to end
@@ -87,7 +102,7 @@ export async function checkForArgs(
 
 	if (defaultCommand) command ??= defaultCommand;
 	commands.help ??= help;
-	commands["--help"] ??= help;
+	commands["--help"] ??= commands.help;
 
 	/**
 	 * If value is in executable command list

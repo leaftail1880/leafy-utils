@@ -5,19 +5,14 @@ import { spawn } from "child_process";
 import { Commiter } from "../src/commit.js";
 
 async function main() {
-	await Commiter.pack_package.init();
-	const other_commit = await Commiter.runPackageScript(
-		"publish",
-		process.argv.filter((e, i) => i >= 2)
-	);
-	if (other_commit !== false) return;
+	if (await Commiter.runPackageScript("publish", process.argv.slice(2))) return;
 
-	const parsed = await Commiter.checkForCommitArgs(
+	const args = await Commiter.checkForCommitArgs(
 		"Publishes package from dir where it was called. Alias for git commit and yarn publish"
 	);
 
 	await Commiter.build();
-	await Commiter.add_commit_push(parsed);
+	await Commiter.add_commit_push(args);
 
 	spawn("yarn", ["publish", `--non-interactive`], {
 		stdio: "inherit",
@@ -26,4 +21,7 @@ async function main() {
 }
 
 main();
+
+
+
 
