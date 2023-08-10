@@ -84,7 +84,7 @@ export const Commiter = {
 			await Commiter.precommit(arg_obj);
 			// We need to save package before it will be commited
 			await PACKAGE.save();
-			await runs(`git`, ["commit", "-a", '--message="${message}"']);
+			await runs(`git`, ["commit", "-a", `--message="${message}"`]);
 			await Commiter.postcommit(arg_obj);
 		}
 	},
