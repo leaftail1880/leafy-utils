@@ -13,9 +13,9 @@ export namespace Commiter {
      * Runs this structure:
      *
      * ```shell
-     * this.precommit
+     * precommit
      * git commit -a
-     * this.postcommit
+     * postcommit
      * ```
      * @readonly
      */
@@ -26,11 +26,10 @@ export namespace Commiter {
     /**
      * Runs this structure:
      * ```shell
-     * scripts.preadd
      * git add ./
-     *   this.precommit
+     *   precommit
      *   git commit -a
-     *   thus.postcommit
+     *   postcommit
      * git push
      * ```
      * @readonly
@@ -43,11 +42,10 @@ export namespace Commiter {
      * Runs this structure:
      * ```shell
      * scripts.build
-     *   scripts.preadd
      *   git add ./
-     *     this.precommit
+     *     precommit
      *     git commit -a
-     *     this.postcommit
+     *     postcommit
      *   git push
      * ```
      * @readonly
@@ -59,7 +57,7 @@ export namespace Commiter {
      * @param {string[]} args Args to add
      * @readonly
      */
-    export function runPackageScript(scriptName: string, args?: string[], log?: boolean): Promise<boolean>;
+    export function runPackageScript(scriptName: string, args?: string[]): Promise<any>;
     export function checkForCommitArgs(helpText?: string): Promise<{
         type: string;
         info: string;

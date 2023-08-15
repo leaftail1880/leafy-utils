@@ -1,5 +1,5 @@
 import { PackageJSON } from "./package.js";
-import { checkForArgs, execWithLog, runs } from "./terminal.js";
+import { checkForArgs, execute } from "./terminal.js";
 
 const PACKAGE = new PackageJSON();
 
@@ -28,9 +28,9 @@ export const Commiter = {
 	 * Runs this structure:
 	 *
 	 * ```shell
-	 * this.precommit
+	 * precommit
 	 * git commit -a
-	 * this.postcommit
+	 * postcommit
 	 * ```
 	 * @readonly
 	 */
@@ -72,7 +72,7 @@ export const Commiter = {
 			if (info) message += ` ${info}`;
 
 			/** @type {CommitArgument} */
-			const arg_obj = {
+			const args = {
 				version,
 				message,
 				type,
@@ -81,22 +81,22 @@ export const Commiter = {
 				package: PACKAGE.data,
 			};
 
-			await Commiter.precommit(arg_obj);
+			await Commiter.precommit(args);
+
 			// We need to save package before it will be commited
 			await PACKAGE.save();
-			await runs(`git`, ["commit", "-a", `--message="${message}"`]);
-			await Commiter.postcommit(arg_obj);
+			await execute(`git commit -a --message="${message}"`);
+			await Commiter.postcommit(args);
 		}
 	},
 
 	/**
 	 * Runs this structure:
 	 * ```shell
-	 * scripts.preadd
 	 * git add ./
-	 *   this.precommit
+	 *   precommit
 	 *   git commit -a
-	 *   thus.postcommit
+	 *   postcommit
 	 * git push
 	 * ```
 	 * @readonly
@@ -104,19 +104,18 @@ export const Commiter = {
 	async add_commit_push({ type = "fix", info = "" } = {}) {
 		await PACKAGE.init();
 
-		await runs("git", ["add", "./"]);
+		await execute("git add ./");
 		await this.commit({ type, info });
-		await runs("git", ["push"]);
+		await execute("git push");
 	},
 	/**
 	 * Runs this structure:
 	 * ```shell
 	 * scripts.build
-	 *   scripts.preadd
 	 *   git add ./
-	 *     this.precommit
+	 *     precommit
 	 *     git commit -a
-	 *     this.postcommit
+	 *     postcommit
 	 *   git push
 	 * ```
 	 * @readonly
@@ -127,7 +126,7 @@ export const Commiter = {
 		if ("build" in (PACKAGE.data.scripts ?? {})) {
 			console.log("Building...");
 			const start = Date.now();
-			await execWithLog(PACKAGE.data.scripts.build);
+			await execute(PACKAGE.data.scripts.build);
 			console.log("Done in", ((Date.now() - start) / 1000).toFixed(2), "sec");
 		}
 	},
@@ -137,7 +136,7 @@ export const Commiter = {
 	 * @param {string[]} args Args to add
 	 * @readonly
 	 */
-	async runPackageScript(scriptName, args = [], log = true) {
+	async runPackageScript(scriptName, args = []) {
 		await PACKAGE.init();
 		const scripts = PACKAGE.data?.scripts;
 		if (!scripts || typeof scripts !== "object" || !(scriptName in scripts))
@@ -146,7 +145,7 @@ export const Commiter = {
 		const script = scripts[scriptName];
 		const arg = args.map((e) => (e.includes(" ") ? `"${e}"` : e)).join(" ");
 
-		return execWithLog(`${script} ${arg ? arg : ""}`, log);
+		return execute(`${script} ${arg ? arg : ""}`);
 	},
 	async checkForCommitArgs(helpText = "Commits dir where it was called.") {
 		const commandList = ["fix", "update", "release"];

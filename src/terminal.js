@@ -1,5 +1,78 @@
 import child_process, { spawn } from "child_process";
+import fs from "fs";
 import util from "util";
+
+/**
+ * @typedef {(...text: string[]) => string} Colorer
+ */
+
+export class LeafyLogger {
+	static colors = {
+		yellow: "\x1B[33m",
+		red: "\x1B[31m",
+		reset: "\x1b[0m",
+		cyan: "\x1B[36m",
+		greenBright: "\x1B[92m",
+	};
+	/**
+	 * @param {Colorer | string} color
+	 */
+	static createLogType(color) {
+		/**
+		 * @param {...any} [context]
+		 */
+		return function (...context) {
+			const msg = util.format(...context);
+			this.writeLog({ color, consoleMessage: msg, fileMessage: msg });
+		};
+	}
+	constructor({ filePath = "", prefix = "" }) {
+		if (filePath) {
+			this.stream = fs.createWriteStream(filePath, {
+				flags: "a",
+				encoding: "utf-8",
+			});
+			this.stream.write("\n");
+		}
+		this.prefix = prefix;
+
+		this.error = LeafyLogger.createLogType(LeafyLogger.colors.red);
+		this.warn = LeafyLogger.createLogType(LeafyLogger.colors.yellow);
+		this.info = LeafyLogger.createLogType(LeafyLogger.colors.cyan);
+		this.log = this.info;
+		this.success = LeafyLogger.createLogType(LeafyLogger.colors.greenBright);
+	}
+	/**
+	 * @param {{
+	 * consoleMessage?: string,
+	 * fileMessage?: string,
+	 * color: Colorer | string
+	 * }} message
+	 */
+	writeLog({ consoleMessage, fileMessage, color = LeafyLogger.colors.yellow }) {
+		/** @type {Colorer} */
+		const colorify =
+			typeof color === "function"
+				? color
+				: (...text) => color + text.join("") + LeafyLogger.colors.reset;
+
+		if (consoleMessage)
+			console.log(
+				`\x1b[0m${new Date().toLocaleString([], {
+					hourCycle: "h24",
+					timeStyle: "medium",
+				})} ${colorify(this.prefix)} ${consoleMessage}\x1b[0m`
+			);
+
+		if (fileMessage && this.stream)
+			this.stream.write(
+				`[${new Date().toLocaleString()}] ${fileMessage.replace(
+					/\x1b\[\d+m/g,
+					""
+				)}\r`
+			);
+	}
+}
 
 /**
  * Ask user for input any text
@@ -30,6 +103,7 @@ export function print(...data) {
  * Executes common terminal command
  * @param {string} command Command to execute
  * @returns {Promise<{stderr: string; stdout: string}>}
+ * @deprecated Use execute instead
  */
 export async function exec(command) {
 	return new Promise((resolve, reject) => {
@@ -47,6 +121,7 @@ export async function exec(command) {
  * Executes common terminal command
  * @param {string} command Command to execute
  * @returns {Promise<boolean>}
+ * @deprecated Use execute instead
  */
 export async function execWithLog(command, showLog = true) {
 	const info = await exec(command);
@@ -62,11 +137,10 @@ export async function execWithLog(command, showLog = true) {
 
 /**
  * @param {string} command
- * @param {string[]} args
  */
-export function runs(command, args) {
+export function execute(command) {
 	return new Promise((resolve, reject) => {
-		const process = spawn(command, args, { stdio: "inherit", shell: true });
+		const process = spawn(command, { stdio: "inherit", shell: true });
 		process.on("exit", resolve);
 		process.on("error", reject);
 	});

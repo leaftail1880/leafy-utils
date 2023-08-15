@@ -1,3 +1,4 @@
+/// <reference types="node" />
 /**
  * Ask user for input any text
  * @param {string} [text] - Text to show before input like "Count: "
@@ -13,6 +14,7 @@ export function print(...data: any[]): void;
  * Executes common terminal command
  * @param {string} command Command to execute
  * @returns {Promise<{stderr: string; stdout: string}>}
+ * @deprecated Use execute instead
  */
 export function exec(command: string): Promise<{
     stderr: string;
@@ -22,13 +24,13 @@ export function exec(command: string): Promise<{
  * Executes common terminal command
  * @param {string} command Command to execute
  * @returns {Promise<boolean>}
+ * @deprecated Use execute instead
  */
 export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
 /**
  * @param {string} command
- * @param {string[]} args
  */
-export function runs(command: string, args: string[]): Promise<any>;
+export function execute(command: string): Promise<any>;
 /**
  * @deprecated Unusable, bagged and should be removed
  */
@@ -47,4 +49,45 @@ export function checkForArgs(commands: Record<string, (arg?: {
     input: string[];
     raw_input: string;
 }>;
+/**
+ * @typedef {(...text: string[]) => string} Colorer
+ */
+export class LeafyLogger {
+    static colors: {
+        yellow: string;
+        red: string;
+        reset: string;
+        cyan: string;
+        greenBright: string;
+    };
+    /**
+     * @param {Colorer | string} color
+     */
+    static createLogType(color: Colorer | string): (...context?: any[]) => void;
+    constructor({ filePath, prefix }: {
+        filePath?: string;
+        prefix?: string;
+    });
+    stream: fs.WriteStream;
+    prefix: string;
+    error: (...context?: any[]) => void;
+    warn: (...context?: any[]) => void;
+    info: (...context?: any[]) => void;
+    log: (...context?: any[]) => void;
+    success: (...context?: any[]) => void;
+    /**
+     * @param {{
+     * consoleMessage?: string,
+     * fileMessage?: string,
+     * color: Colorer | string
+     * }} message
+     */
+    writeLog({ consoleMessage, fileMessage, color }: {
+        consoleMessage?: string;
+        fileMessage?: string;
+        color: Colorer | string;
+    }): void;
+}
+export type Colorer = (...text: string[]) => string;
+import fs from "fs";
 //# sourceMappingURL=terminal.d.ts.map
