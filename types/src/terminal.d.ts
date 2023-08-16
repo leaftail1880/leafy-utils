@@ -11,30 +11,9 @@ export function input(text?: string): Promise<string>;
  */
 export function print(...data: any[]): void;
 /**
- * Executes common terminal command
- * @param {string} command Command to execute
- * @returns {Promise<{stderr: string; stdout: string}>}
- * @deprecated Use execute instead
- */
-export function exec(command: string): Promise<{
-    stderr: string;
-    stdout: string;
-}>;
-/**
- * Executes common terminal command
- * @param {string} command Command to execute
- * @returns {Promise<boolean>}
- * @deprecated Use execute instead
- */
-export function execWithLog(command: string, showLog?: boolean): Promise<boolean>;
-/**
  * @param {string} command
  */
 export function execute(command: string): Promise<any>;
-/**
- * @deprecated Unusable, bagged and should be removed
- */
-export function clearLines(count?: number): void;
 /**
  * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
  */

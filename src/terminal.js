@@ -100,42 +100,6 @@ export function print(...data) {
 }
 
 /**
- * Executes common terminal command
- * @param {string} command Command to execute
- * @returns {Promise<{stderr: string; stdout: string}>}
- * @deprecated Use execute instead
- */
-export async function exec(command) {
-	return new Promise((resolve, reject) => {
-		const proc = child_process.exec(command, (error, stdout, stderr) => {
-			if (error) reject(error);
-			else resolve({ stderr, stdout });
-		});
-
-		proc.stdout.setEncoding("utf-8");
-		proc.stderr.setEncoding("utf-8");
-	});
-}
-
-/**
- * Executes common terminal command
- * @param {string} command Command to execute
- * @returns {Promise<boolean>}
- * @deprecated Use execute instead
- */
-export async function execWithLog(command, showLog = true) {
-	const info = await exec(command);
-	if (showLog) {
-		if (info.stdout) console.log(info.stdout);
-		if (info.stderr) console.log(info.stderr);
-	}
-	//                 Debugger attached and disconected
-	//                 writes to stderr but this isnt error
-	if (info.stderr && !info.stderr.includes("debugger")) return false;
-	else return true;
-}
-
-/**
  * @param {string} command
  */
 export function execute(command) {
@@ -144,14 +108,6 @@ export function execute(command) {
 		process.on("exit", resolve);
 		process.on("error", reject);
 	});
-}
-
-/**
- * @deprecated Unusable, bagged and should be removed
- */
-export function clearLines(count = -1) {
-	process.stdout.moveCursor(0, count); // up one line
-	process.stdout.clearLine(1); // from cursor to end
 }
 
 /**

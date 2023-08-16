@@ -2,8 +2,7 @@
  * @typedef {Object} dirOptions
  * @property {string} inputPath
  * @property {string} outputPath
- * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>} extensions
- * @property {string[]} [ignoreExtensions]
+ * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>) | true | false>} extensions
  * @property {string[]} [ignoreFolders]
  * @property {string[]} [ignoreFiles]
  * @property {boolean=} [silentMode=false]
@@ -21,8 +20,7 @@ export function fordir(options: dirOptions): Promise<void>;
 export type dirOptions = {
     inputPath: string;
     outputPath: string;
-    extensions: Record<string, (buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>>;
-    ignoreExtensions?: string[];
+    extensions: Record<string, boolean | ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>;
     ignoreFolders?: string[];
     ignoreFiles?: string[];
     silentMode?: boolean | undefined;

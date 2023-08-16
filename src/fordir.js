@@ -1,12 +1,14 @@
 import fs from "fs/promises";
 import path from "path";
+import { LeafyLogger } from "./terminal.js";
+
+const logger = new LeafyLogger({ prefix: "Dir" });
 
 /**
  * @typedef {Object} dirOptions
  * @property {string} inputPath
  * @property {string} outputPath
- * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>} extensions
- * @property {string[]} [ignoreExtensions]
+ * @property {Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>) | true | false>} extensions
  * @property {string[]} [ignoreFolders]
  * @property {string[]} [ignoreFiles]
  * @property {boolean=} [silentMode=false]
@@ -36,7 +38,7 @@ export async function fordir(options) {
 	 * @returns
 	 */
 	function log(...messages) {
-		if (!silentMode) console.log(...messages);
+		if (!silentMode) logger.log(...messages);
 	}
 
 	/**
@@ -60,16 +62,23 @@ export async function fordir(options) {
 	 */
 	async function workWithFile(givenpath, filename, fullpath) {
 		const file = path.parse(fullpath);
-		if (
-			(!(file.ext in extensions) && !options.ignoreExtensions) ||
-			options.ignoreExtensions?.includes(file.ext)
-		)
+		if (!(file.ext in extensions)) {
+			logger.error("Unknown file extension:", file.ext, "File:", fullpath);
 			return;
+		}
+
+		const parse = extensions[file.ext];
+		if (!parse) return;
 
 		const buffer = await fs.readFile(fullpath);
 		log("F:", path.join(givenpath, filename));
 
-		const result = await extensions[file.ext](buffer, givenpath, filename);
+		let result = {};
+		if (parse === true) {
+			result = { data: buffer, filename };
+		} else {
+			result = await parse(buffer, givenpath, filename);
+		}
 		result.modified ??= true;
 
 		if (result.modified)
@@ -91,14 +100,14 @@ export async function fordir(options) {
 			const fullpath = path.join(additionalPath, filename);
 
 			if ((await fs.lstat(fullpath)).isFile()) {
-			  if (options.ignoreFiles?.includes(filename)) continue
+				if (options.ignoreFiles?.includes(filename)) continue;
 				await workWithFile(
 					path.join(path.join(additionalPath).replace(inputPath, "")),
 					filename,
 					fullpath
 				);
 			} else {
-				if (options.ignoreFolders?.includes(filename)) continue
+				if (options.ignoreFolders?.includes(filename)) continue;
 				await workWithDir(path.join(additionalPath, filename));
 			}
 		}
