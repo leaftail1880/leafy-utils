@@ -1,4 +1,5 @@
 import child_process from "child_process";
+import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
 import { LeafyLogger } from "./terminal.js";
@@ -32,16 +33,29 @@ export function defineGitDependency(config) {
  *
  * @param {string} command
  * @param {Partial<child_process.ExecOptionsWithStringEncoding>} options
- * @returns {Promise<{stdout: string, stderr: string, error?: child_process.ExecException}>}
+ * @param {{ignore?: (error: child_process.ExecException, stderr: string) => boolean, failedTo: string, context?: object}} [errorHandler]
+ * @returns {Promise<string>}
  */
-const execAsync = (command, options) =>
+const execAsync = (command, options, errorHandler) =>
 	new Promise((resolve) =>
 		child_process.exec(
 			command,
 			Object.assign({ encoding: "utf-8" }, options),
 			(error, stdout, stderr) => {
 				if (stderr && !error) error = new Error(stderr);
-				resolve({ stderr, stdout, error });
+
+				if (
+					errorHandler &&
+					(error || stderr) &&
+					!errorHandler.ignore?.(error, stderr)
+				) {
+					logger.error(
+						"Failed to " + errorHandler.failedTo,
+						errorHandler.context ?? ""
+					);
+					throw error;
+				}
+				resolve(stdout);
 			}
 		)
 	);
@@ -62,48 +76,53 @@ export async function SyncGitDependencies({
 }) {
 	for (const file of files) {
 		/** @type {import("./types.js").GitDependency} */
-		const config = (await import(path.join(filesBase, file))).default;
+		const config = (await import("file://" + path.join(filesBase, file)))
+			.default;
 		const remoteName = config.remote.name ?? path.parse(file).name;
-		const cwd = path.dirname(file);
+		let cwd = path.dirname(file);
 
-		/** @param {string} command */
-		const exec = (command) => execAsync(command, { cwd, encoding: "utf-8" });
+		/**
+		 * @param {string} command
+		 * @param {Parameters<typeof execAsync>[2]} [errorHandler]
+		 */
+		const exec = (command, errorHandler) =>
+			execAsync(command, { cwd, encoding: "utf-8" }, errorHandler);
 
 		if (mode === "init") {
 			// Add remote
-			const remoteAdd = await exec(
-				`git remote add ${remoteName} ${config.remote.url} -f --no-tags -t=${config.remote.branch}`
+			await exec(
+				`git remote add ${remoteName} ${config.remote.url} -f --no-tags -t=${config.remote.branch}`,
+				{
+					failedTo: "Add remote",
+					context: { remoteName, ...config.remote },
+					ignore: (_, stderr) => {
+						if (stderr.includes(`error: remote ${remoteName} already exists`)) {
+							logger.warn(`Remote ${remoteName} already exists, skipping...`);
+							return true;
+						}
+					},
+				}
 			);
-
-			// If exists - skip
-			if (remoteAdd.stderr) {
-				if (
-					remoteAdd.stderr.includes(
-						`error: remote ${remoteName} already exists`
-					)
-				) {
-					logger.warn(`Remote ${remoteAdd} already exists, skipping...`);
-				} else throw remoteAdd.error;
-			}
 
 			logger.success("Inited successfully");
 		} else {
 			// Merge refs
-			const merge = await exec(
-				`git merge -s ours --no-commit ${remoteName}/${config.remote.branch}`
+			await exec(
+				`git merge -s ours --no-commit ${remoteName}/${config.remote.branch}`,
+				{
+					failedTo: "merge refs",
+					ignore: (_, stderr) =>
+						stderr.includes("fatal: refusing to merge unrelated histories"),
+				}
 			);
-			if (
-				!merge.stderr.includes("fatal: refusing to merge unrelated histories")
-			) {
-				logger.error("Failed to merge refs:");
-				throw merge.error;
-			}
 
 			// Get git dir
-			const gitDirExec = await exec("git rev-parse --show-toplevel");
-			if (gitDirExec.error) throw gitDirExec.error;
-			const gitDir = gitDirExec.stdout.trim();
-			logger.log("Git dir:", gitDir);
+			cwd = (
+				await exec("git rev-parse --show-toplevel", {
+					failedTo: "get git dir",
+				})
+			).trim();
+			logger.log("Git dir:", cwd.replace(process.cwd(), ""));
 
 			// Update files
 			for (let [remote, options] of Object.entries(config.dependencies)) {
@@ -129,26 +148,51 @@ export async function SyncGitDependencies({
 				logger.info("Path:", local);
 
 				// Define temp path
-				const temp = options.file ? "&&temp&&/file" : "&&temp&&";
+				const temp = "&&_git_dep_temp_&&";
 
-				const fullLocal = path.join(gitDir, local);
-				const fullTemp = path.join(gitDir, temp);
+				const fullLocal = path.join(cwd, local);
+				const fullTemp = path.join(cwd, temp);
 
-				// Clear temp
-				await fs.rm(fullTemp, {
-					recursive: true,
-					force: true,
-				});
+				async function restoreStagedTemp() {
+					const changes = await exec(`git status -z -uall`, {
+						failedTo: "list changed files",
+					});
+					if (
+						!changes
+							.split("\x00")
+							.find((e) => e.includes("A") && e.includes(temp))
+					)
+						return;
+
+					await exec(`git restore --staged "${temp}/*"`, {
+						failedTo: "restore from staged",
+						context: {
+							changes,
+							gitDir: cwd,
+							files: await fs.readdir(cwd),
+						},
+					});
+				}
+
+				if (existsSync(fullTemp)) {
+					// Restore them from stage
+					await restoreStagedTemp();
+
+					// Clear temp
+					await fs.rm(fullTemp, {
+						recursive: true,
+						force: true,
+					});
+				}
 
 				// Get remote file(s)
-				const readTree = await exec(
-					`git read-tree --prefix="${temp}" -u ${remoteName}/${config.remote.branch}:${remotePath}`
+				await exec(
+					`git read-tree --prefix="${temp}" -u ${remoteName}/${config.remote.branch}:${remotePath}`,
+					{ failedTo: "Get remote files" }
 				);
-				if (readTree.error) throw readTree.error;
 
 				// Restore them from stage
-				const restoreStaged = await exec(`git restore --staged "${temp}"`);
-				if (restoreStaged.error) throw restoreStaged.error;
+				await restoreStagedTemp();
 
 				// Merge changes
 				await fs.cp(fullTemp, fullLocal, { force: true, recursive: true });
@@ -156,9 +200,12 @@ export async function SyncGitDependencies({
 					recursive: true,
 					force: true,
 				});
+
+				// Apply changes
+				await restoreStagedTemp();
 			}
 		}
 	}
 
-	logger.success("Done");
+	logger.success("Everything is up to date");
 }
