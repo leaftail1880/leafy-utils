@@ -122,7 +122,7 @@ export async function SyncGitDependencies({
 					failedTo: "get git dir",
 				})
 			).trim();
-			logger.log("Git dir:", cwd.replace(process.cwd(), ""));
+			logger.log("Dir:", cwd.replace(process.cwd().replace(/\\/g, "/"), ""));
 
 			// Update files
 			for (let [remote, options] of Object.entries(config.dependencies)) {
@@ -145,7 +145,7 @@ export async function SyncGitDependencies({
 					.replace(/\\/g, "/")
 					.replace(/^\//g, "");
 
-				logger.info("Path:", local);
+				logger.info("Dep:", local);
 
 				// Define temp path
 				const temp = "&&_git_dep_temp_&&";
@@ -187,7 +187,7 @@ export async function SyncGitDependencies({
 
 				// Get remote file(s)
 				await exec(
-					`git read-tree --prefix="${temp}" -u ${remoteName}/${config.remote.branch}:${remotePath}`,
+					`git read-tree --prefix="${temp}" -u "${remoteName}/${config.remote.branch}:${remotePath}"`,
 					{ failedTo: "Get remote files" }
 				);
 
