@@ -5,12 +5,13 @@
 		"target": "ES2022",
 		"module": "ES2020",
 		"moduleResolution": "node",
+		"lib": ["ES2022"],
 		"declaration": true,
 		"emitDeclarationOnly": true,
 		"outDir": "types",
 		"declarationMap": true,
 		"allowSyntheticDefaultImports": true
 	},
-	"exclude": ["./types/**", "./leafs/**", "build.js"],
-	"include": ["./exports.js"]
+	"exclude": ["./types/**", "build.js"],
+	"include": ["./exports.js", "src"]
 }
