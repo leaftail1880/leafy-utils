@@ -1,18 +1,18 @@
 {
-	"compilerOptions": {
-		"allowJs": true,
-		"checkJs": true,
-		"target": "ES2022",
-		"module": "ES2020",
-		"moduleResolution": "node",
-		"lib": ["ES2022"],
-		"declaration": true,
-		"noImplicitAny": true,
-		"emitDeclarationOnly": true,
-		"outDir": "types",
-		"declarationMap": true,
-		"allowSyntheticDefaultImports": true
-	},
-	"exclude": ["./types/**", "build.js"],
-	"include": ["./exports.js", "src"]
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "target": "ES2022",
+    "module": "ES2020",
+    "moduleResolution": "node",
+    "lib": ["ES2022"],
+    "declaration": true,
+    "noImplicitAny": true,
+    "emitDeclarationOnly": true,
+    "outDir": "types",
+    "declarationMap": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": ["./types/**", "build.js"],
+  "include": ["./exports.js", "src"]
 }

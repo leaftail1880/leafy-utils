@@ -60,4 +60,19 @@ export interface GitDependency {
         file?: boolean;
     }>;
 }
+export type CustomParseArgsConfig = Record<string, {
+    type: 'boolean' | 'string';
+    short?: string | undefined;
+}>;
+export type CustomParsedArgs<T extends CustomParseArgsConfig> = {
+    [K in keyof T]: T[K]['type'] extends 'string' ? string : boolean;
+};
+export interface CustomParseArgReturn<T extends CustomParseArgsConfig> {
+    command: string;
+    input: string[];
+    raw_input: string;
+    options: import('./types.js').CustomParsedArgs<T> & {
+        help: boolean;
+    };
+}
 //# sourceMappingURL=types.d.ts.map

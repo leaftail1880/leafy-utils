@@ -32,4 +32,6 @@ export function SyncGitDependencies({ files, filesBase, mode, }: {
     filesBase?: string;
     mode?: "init" | "update";
 }): Promise<void>;
+export const logger: LeafyLogger;
+import { LeafyLogger } from './LeafyLogger.js';
 //# sourceMappingURL=gitdep.d.ts.map

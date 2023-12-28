@@ -14,7 +14,7 @@ export class LeafyLogger {
     /**
      * @param {Colorizer | string} color
      */
-    static createLogType(color: Colorizer | string): (...context?: any[]) => void;
+    static createLogType(color: Colorizer | string): (this: LeafyLogger, ...context?: any[]) => void;
     /**
      * @param {{filePath?: string, prefix: string}} param0
      */
@@ -24,11 +24,11 @@ export class LeafyLogger {
     });
     stream: fs.WriteStream;
     prefix: string;
-    error: (...context?: any[]) => void;
-    warn: (...context?: any[]) => void;
-    info: (...context?: any[]) => void;
-    log: (...context?: any[]) => void;
-    success: (...context?: any[]) => void;
+    error: (this: LeafyLogger, ...context?: any[]) => void;
+    warn: (this: LeafyLogger, ...context?: any[]) => void;
+    info: (this: LeafyLogger, ...context?: any[]) => void;
+    log: (this: LeafyLogger, ...context?: any[]) => void;
+    success: (this: LeafyLogger, ...context?: any[]) => void;
     /**
      * @param {{
      * consoleMessage?: string,
@@ -44,5 +44,5 @@ export class LeafyLogger {
     time(postfix?: string): () => string;
 }
 export type Colorizer = (...text: string[]) => string;
-import fs from "fs";
+import fs from 'fs';
 //# sourceMappingURL=LeafyLogger.d.ts.map

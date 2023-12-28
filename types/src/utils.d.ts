@@ -48,5 +48,22 @@ export function addQuotes(text: string, { when, quote }?: {
     when?: boolean;
     quote?: string;
 }): string;
-import fs from "fs/promises";
+/**
+ * Utility class used to hook promise's resolve
+ * @template T
+ */
+export class PromiseHook<T> {
+    /**
+     * Function used to resolve promise value
+     * @type {(value: T | PromiseLike<T>) => void}
+     */
+    resolve: (value: T | PromiseLike<T>) => void;
+    /**
+     * Promise being hooked
+     * @type {Promise<T>}
+     */
+    promise: Promise<T>;
+    then: <TResult1 = T, TResult2 = never>(onfulfilled?: (value: T) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>) => Promise<TResult1 | TResult2>;
+}
+import fs from 'fs/promises';
 //# sourceMappingURL=utils.d.ts.map

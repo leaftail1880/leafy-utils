@@ -1,5 +1,8 @@
 /**
- * @typedef {{type?: 'fix' | 'update' | "release"; info?: string }} CommitMeta
+ * @typedef {{
+ *   type?: 'fix' | 'update' | "release"
+ *   info?: string
+ * }} CommitMeta
  */
 /**
  * @typedef {object} CommitHookArgument
@@ -20,24 +23,26 @@ export class CommitManager {
      * @param {string[]} pathes
      */
     static exceptFor(pathes: string[]): string;
+    static logger: LeafyLogger;
     /**
      * @param {undefined | string} cwd
      */
     constructor(cwd: undefined | string);
-    logger: LeafyLogger;
     package: PackageJSON;
-    /** @type {(s: string) => Promise<number>} */
-    execute: (s: string) => Promise<number>;
+    exec: (command: string, options: import("./terminal.js").ExecAsyncOptions) => Promise<string>;
+    logger: LeafyLogger;
     /**
      * Replace this function if you want to do something before commit
      * @param {CommitHookArgument} arg
+     * @this {CommitManager}
      */
-    precommit(arg: CommitHookArgument): Promise<void>;
+    precommit(this: CommitManager, arg: CommitHookArgument): Promise<void>;
     /**
      * Replace this function if you want to do something after commit
      * @param {CommitHookArgument} arg
+     * @this {CommitManager}
      */
-    postcommit(arg: CommitHookArgument): Promise<void>;
+    postcommit(this: CommitManager, arg: CommitHookArgument): Promise<void>;
     /**
      * Runs this structure:
      *
@@ -64,9 +69,15 @@ export class CommitManager {
      */
     runPackageScript(scriptName: string, args?: string[]): Promise<boolean>;
     /**
-     * @returns  {Promise<CommitMeta>}
+     * @template {import('./types.js').CustomParseArgsConfig} T
+     * @param {T} [config]
+     * @returns {Promise<CommitMeta & {options: import('./types.js').CustomParseArgReturn<T>['options']}>}
      */
-    parseArgs(helpText?: string): Promise<CommitMeta>;
+    parseArgs<T extends import("./types.js").CustomParseArgsConfig>(helpText?: string, helpOptions?: string, config?: T): Promise<CommitMeta & {
+        options: import("./types.js").CustomParsedArgs<T> & {
+            help: boolean;
+        };
+    }>;
 }
 export const Committer: CommitManager;
 export type CommitMeta = {
@@ -81,6 +92,6 @@ export type CommitHookArgument = {
     type: string;
     info: string;
 };
-import { LeafyLogger } from "./LeafyLogger.js";
-import { PackageJSON } from "./package.js";
+import { PackageJSON } from './package.js';
+import { LeafyLogger } from './LeafyLogger.js';
 //# sourceMappingURL=commit.d.ts.map

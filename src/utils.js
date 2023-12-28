@@ -1,7 +1,7 @@
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
-import url from "url";
+import fs from 'fs/promises'
+import os from 'os'
+import path from 'path'
+import url from 'url'
 
 /**
  * Typed bind
@@ -11,8 +11,8 @@ import url from "url";
  * @returns {F}
  */
 export function TypedBind(func, context) {
-	if (typeof func !== "function") return func;
-	return func.bind(context);
+  if (typeof func !== 'function') return func
+  return func.bind(context)
 }
 
 /**
@@ -20,23 +20,20 @@ export function TypedBind(func, context) {
  * @param {string} metaUrl import.meta.url
  */
 export function pathInfo(metaUrl) {
-	const __dirname = url.fileURLToPath(new URL(".", metaUrl));
-	const __filename = url.fileURLToPath(metaUrl);
-	return {
-		__dirname,
-		__filename,
-		__cli:
-			process.argv[1] &&
-			__filename &&
-			path.resolve(__filename).includes(path.resolve(process.argv[1])),
-		/**
-		 * Returns path joined with __dirname
-		 * @param  {...string} to
-		 */
-		relative(...to) {
-			return path.join(__dirname, ...to);
-		},
-	};
+  const __dirname = url.fileURLToPath(new URL('.', metaUrl))
+  const __filename = url.fileURLToPath(metaUrl)
+  return {
+    __dirname,
+    __filename,
+    __cli: process.argv[1] && __filename && path.resolve(__filename).includes(path.resolve(process.argv[1])),
+    /**
+     * Returns path joined with __dirname
+     * @param  {...string} to
+     */
+    relative(...to) {
+      return path.join(__dirname, ...to)
+    },
+  }
 }
 
 /**
@@ -49,7 +46,7 @@ export function pathInfo(metaUrl) {
  * @returns {ReturnType<fs['writeFile']>}
  */
 export function writeJSON(path, json) {
-	return fs.writeFile(path, toCRLF(JSON.stringify(json, null, 2)));
+  return fs.writeFile(path, toCRLF(JSON.stringify(json, null, 2)))
 }
 
 /**
@@ -57,7 +54,7 @@ export function writeJSON(path, json) {
  * @param {string} path - Path to file
  */
 export async function readJSON(path) {
-	return JSON.parse(await fs.readFile(path, "utf-8"));
+  return JSON.parse(await fs.readFile(path, 'utf-8'))
 }
 
 /**
@@ -65,16 +62,31 @@ export async function readJSON(path) {
  * @param {string} text
  */
 export function toCRLF(text) {
-	return text.replace(/\n/g, "\r\n");
+  return text.replace(/\n/g, '\r\n')
 }
 
 /**
  * @param {string} text
  */
-export function addQuotes(
-	text,
-	{ when = os.platform() !== "win32", quote = "" } = {}
-) {
-	if (when) return `${quote}${text}${quote}`;
-	return text;
+export function addQuotes(text, { when = os.platform() !== 'win32', quote = '' } = {}) {
+  if (when) return `${quote}${text}${quote}`
+  return text
+}
+
+/**
+ * Utility class used to hook promise's resolve
+ * @template T
+ */
+export class PromiseHook {
+  /**
+   * Function used to resolve promise value
+   * @type {(value: T | PromiseLike<T>) => void}
+   */
+  resolve
+  /**
+   * Promise being hooked
+   * @type {Promise<T>}
+   */
+  promise = new Promise(r => (this.resolve = r))
+  then = TypedBind(this.promise.then, this.promise)
 }

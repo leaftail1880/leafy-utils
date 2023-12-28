@@ -2,7 +2,7 @@ export class PackageJSON {
     /**
      * @param {string} pathToPackage
      */
-    constructor(pathToPackage?: string);
+    constructor(pathToPackage?: string, fileName?: string);
     /** @private */
     private PACKAGE_PATH;
     /** @private @type {import("./types.js").Package | null} */
