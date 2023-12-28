@@ -56,7 +56,16 @@ export class CommitManager {
    */
   constructor(cwd) {
     this.package = new PackageJSON(cwd)
-    this.exec = execAsync.withDefaults({ cwd })
+
+    /**
+     * @param {string} command
+     * @param {import('./terminal.js').ExecAsyncOptions<false>} options
+     */
+    this.exec = async (command, options) => {
+      const output = await execAsync(command, { cwd }, options)
+      this.logger.log(output)
+      return output
+    }
   }
 
   logger = CommitManager.logger
