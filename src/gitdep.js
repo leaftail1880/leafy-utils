@@ -2,7 +2,7 @@ import child_process from "child_process";
 import { existsSync } from "fs";
 import fs from "fs/promises";
 import path from "path";
-import { LeafyLogger } from "./terminal.js";
+import { LeafyLogger } from "./LeafyLogger.js";
 
 const logger = new LeafyLogger({ prefix: "gitdeps" });
 

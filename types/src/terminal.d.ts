@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * Ask user for input any text
  * @param {string} [text] - Text to show before input like "Count: "
@@ -12,61 +11,25 @@ export function input(text?: string): Promise<string>;
 export function print(...data: any[]): void;
 /**
  * @param {string} command
+ * @param {string | undefined} cwd
+ * @returns {Promise<number>}
  */
-export function execute(command: string): Promise<any>;
+export function execute(command: string, cwd?: string | undefined): Promise<number>;
 /**
  * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
+ * @param {object} [param1={}]
+ * @param {string[]} [param1.commandList=[]]
+ * @param {string} [param1.defaultCommand=""]
  */
-export function checkForArgs(commands: Record<string, (arg?: {
+export function parseArgs(commands: Record<string, (arg?: {
     args: string[];
     raw_input: string;
 }) => any>, { commandList, defaultCommand }?: {
-    commandList?: any[];
+    commandList?: string[];
     defaultCommand?: string;
 }): Promise<{
     command: string;
     input: string[];
     raw_input: string;
 }>;
-/**
- * @typedef {(...text: string[]) => string} Colorer
- */
-export class LeafyLogger {
-    static colors: {
-        yellow: string;
-        red: string;
-        reset: string;
-        cyan: string;
-        greenBright: string;
-    };
-    /**
-     * @param {Colorer | string} color
-     */
-    static createLogType(color: Colorer | string): (...context?: any[]) => void;
-    constructor({ filePath, prefix }: {
-        filePath?: string;
-        prefix?: string;
-    });
-    stream: fs.WriteStream;
-    prefix: string;
-    error: (...context?: any[]) => void;
-    warn: (...context?: any[]) => void;
-    info: (...context?: any[]) => void;
-    log: (...context?: any[]) => void;
-    success: (...context?: any[]) => void;
-    /**
-     * @param {{
-     * consoleMessage?: string,
-     * fileMessage?: string,
-     * color: Colorer | string
-     * }} message
-     */
-    writeLog({ consoleMessage, fileMessage, color }: {
-        consoleMessage?: string;
-        fileMessage?: string;
-        color: Colorer | string;
-    }): void;
-}
-export type Colorer = (...text: string[]) => string;
-import fs from "fs";
 //# sourceMappingURL=terminal.d.ts.map

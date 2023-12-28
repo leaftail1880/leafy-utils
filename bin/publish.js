@@ -2,17 +2,18 @@
 // @ts-check
 
 import { spawn } from "child_process";
-import { Commiter } from "../src/commit.js";
+import { Committer } from "../src/commit.js";
 
 async function main() {
-	if (await Commiter.runPackageScript("publish", process.argv.slice(2))) return;
+	if (await Committer.runPackageScript("publish", process.argv.slice(2)))
+		return;
 
-	const args = await Commiter.checkForCommitArgs(
-		"Publishes package from dir where it was called. Alias for git commit and yarn publish"
+	const args = await Committer.parseArgs(
+		"Publishes package from dir where it was called. Alias for git add/commit/push and yarn publish"
 	);
 
-	await Commiter.build();
-	await Commiter.add_commit_push(args);
+	await Committer.build();
+	await Committer.commit(args);
 
 	spawn("yarn", ["publish", `--non-interactive`], {
 		stdio: "inherit",
@@ -21,7 +22,4 @@ async function main() {
 }
 
 main();
-
-
-
 

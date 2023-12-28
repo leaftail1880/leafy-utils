@@ -1,78 +1,5 @@
 import { spawn } from "child_process";
-import fs from "fs";
 import util from "util";
-
-/**
- * @typedef {(...text: string[]) => string} Colorer
- */
-
-export class LeafyLogger {
-	static colors = {
-		yellow: "\x1B[33m",
-		red: "\x1B[31m",
-		reset: "\x1b[0m",
-		cyan: "\x1B[36m",
-		greenBright: "\x1B[92m",
-	};
-	/**
-	 * @param {Colorer | string} color
-	 */
-	static createLogType(color) {
-		/**
-		 * @param {...any} [context]
-		 */
-		return function (...context) {
-			const msg = util.format(...context);
-			this.writeLog({ color, consoleMessage: msg, fileMessage: msg });
-		};
-	}
-	constructor({ filePath = "", prefix = "" }) {
-		if (filePath) {
-			this.stream = fs.createWriteStream(filePath, {
-				flags: "a",
-				encoding: "utf-8",
-			});
-			this.stream.write("\n");
-		}
-		this.prefix = prefix;
-
-		this.error = LeafyLogger.createLogType(LeafyLogger.colors.red);
-		this.warn = LeafyLogger.createLogType(LeafyLogger.colors.yellow);
-		this.info = LeafyLogger.createLogType(LeafyLogger.colors.cyan);
-		this.log = this.info;
-		this.success = LeafyLogger.createLogType(LeafyLogger.colors.greenBright);
-	}
-	/**
-	 * @param {{
-	 * consoleMessage?: string,
-	 * fileMessage?: string,
-	 * color: Colorer | string
-	 * }} message
-	 */
-	writeLog({ consoleMessage, fileMessage, color = LeafyLogger.colors.yellow }) {
-		/** @type {Colorer} */
-		const colorify =
-			typeof color === "function"
-				? color
-				: (...text) => color + text.join("") + LeafyLogger.colors.reset;
-
-		if (consoleMessage)
-			console.log(
-				`\x1b[0m${new Date().toLocaleString([], {
-					hourCycle: "h24",
-					timeStyle: "medium",
-				})} ${colorify(this.prefix)} ${consoleMessage}\x1b[0m`
-			);
-
-		if (fileMessage && this.stream)
-			this.stream.write(
-				`[${new Date().toLocaleString()}] ${fileMessage.replace(
-					/\x1b\[\d+m/g,
-					""
-				)}\r`
-			);
-	}
-}
 
 /**
  * Ask user for input any text
@@ -101,10 +28,12 @@ export function print(...data) {
 
 /**
  * @param {string} command
+ * @param {string | undefined} cwd
+ * @returns {Promise<number>}
  */
-export function execute(command) {
+export function execute(command, cwd = undefined) {
 	return new Promise((resolve, reject) => {
-		const process = spawn(command, { stdio: "inherit", shell: true });
+		const process = spawn(command, { stdio: "inherit", shell: true, cwd });
 		process.on("exit", resolve);
 		process.on("error", reject);
 	});
@@ -112,8 +41,11 @@ export function execute(command) {
 
 /**
  * @param {Record<string, (arg?: {args: string[]; raw_input: string}) => any>} commands Object with key -> function mapping. Note that function must return 0, otherwise process will be exited.
+ * @param {object} [param1={}]
+ * @param {string[]} [param1.commandList=[]]
+ * @param {string} [param1.defaultCommand=""]
  */
-export async function checkForArgs(
+export async function parseArgs(
 	commands,
 	{ commandList = [], defaultCommand = "" } = {}
 ) {

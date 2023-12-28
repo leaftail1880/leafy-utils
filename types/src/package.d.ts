@@ -5,15 +5,15 @@ export class PackageJSON {
     constructor(pathToPackage?: string);
     /** @private */
     private PACKAGE_PATH;
-    /** @private */
-    private DATA;
+    /** @private @type {import("./types.js").Package | null} */
+    private CONTENT;
     /** @private */
     private MODIFIED;
     /**
      * Returns a proxy for data, which sets modified on modify
      * @returns {import("./types.js").Package} A proxy object.
      */
-    get data(): import("./types.js").Package;
+    get content(): import("./types.js").Package;
     /**
      * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
      */
@@ -27,19 +27,6 @@ export class PackageJSON {
      * @returns The return value of fs.writeFile()
      */
     write(): Promise<void>;
-    /**
-     * Use it instead of
-     * ```js
-     * this.read();
-     * this.data.val = 1;
-     * this.save();
-     * ```
-     * @returns
-     */
-    work(): {
-        data: any;
-        save: () => Promise<void>;
-    };
     /**
      * If the file has been modified, write the changes to the file
      * @returns promise that resolves after writing file

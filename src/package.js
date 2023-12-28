@@ -1,12 +1,11 @@
-import fs from "fs/promises";
-import { TypedBind } from "./utils.js";
+import { readJSON, writeJSON } from "./utils.js";
 
 export class PackageJSON {
 	/** @private */
 	PACKAGE_PATH = "";
 
-	/** @private */
-	DATA = null;
+	/** @private @type {import("./types.js").Package | null} */
+	CONTENT = null;
 
 	/** @private */
 	MODIFIED = false;
@@ -22,13 +21,13 @@ export class PackageJSON {
 	 * Returns a proxy for data, which sets modified on modify
 	 * @returns {import("./types.js").Package} A proxy object.
 	 */
-	get data() {
+	get content() {
 		const checkModify = (status = true) => {
 			if (status) this.MODIFIED = true;
 			return status;
 		};
 
-		return new Proxy(this.DATA, {
+		return new Proxy(this.CONTENT, {
 			set(target, p, newValue, reciever) {
 				// New value is same as previous, do nothing
 				if (Reflect.get(target, p) == newValue) return true;
@@ -48,14 +47,14 @@ export class PackageJSON {
 	 * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
 	 */
 	async read() {
-		this.DATA = JSON.parse((await fs.readFile(this.PACKAGE_PATH)).toString());
+		this.CONTENT = await readJSON(this.PACKAGE_PATH);
 	}
 
 	/**
 	 * Reads data if it not initialized
 	 */
 	init() {
-		if (!this.DATA) return this.read();
+		if (!this.CONTENT) return this.read();
 	}
 
 	/**
@@ -63,25 +62,7 @@ export class PackageJSON {
 	 * @returns The return value of fs.writeFile()
 	 */
 	write() {
-		return fs.writeFile(
-			this.PACKAGE_PATH,
-			JSON.stringify(this.DATA, null, "  ")
-				// LF string end is bad for git, replacing it to CRLF
-				.replace(/\n/g, "\r")
-		);
-	}
-
-	/**
-	 * Use it instead of
-	 * ```js
-	 * this.read();
-	 * this.data.val = 1;
-	 * this.save();
-	 * ```
-	 * @returns
-	 */
-	work() {
-		return { data: this.DATA, save: TypedBind(this.save, this) };
+		return writeJSON(this.PACKAGE_PATH, this.CONTENT);
 	}
 
 	/**

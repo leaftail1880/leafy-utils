@@ -1,6 +1,6 @@
 import fs from "fs/promises";
 import path from "path";
-import { LeafyLogger } from "./terminal.js";
+import { LeafyLogger } from "./LeafyLogger.js";
 
 const logger = new LeafyLogger({ prefix: "Dir" });
 
@@ -57,10 +57,10 @@ export async function fordir(options) {
 
 	/**
 	 * @param {string} givenpath
-	 * @param {string} filename
+	 * @param {string} fileName
 	 * @param {string} fullpath
 	 */
-	async function workWithFile(givenpath, filename, fullpath) {
+	async function workWithFile(givenpath, fileName, fullpath) {
 		const file = path.parse(fullpath);
 		if (!(file.ext in extensions)) {
 			logger.error("Unknown file extension:", file.ext, "File:", fullpath);
@@ -71,13 +71,14 @@ export async function fordir(options) {
 		if (!parse) return;
 
 		const buffer = await fs.readFile(fullpath);
-		log("F:", path.join(givenpath, filename));
+		log("F:", path.join(givenpath, fileName));
 
+		/** @type {Partial<(typeof writeQuene)[number]> & {modified?: boolean}} */
 		let result = {};
 		if (parse === true) {
-			result = { data: buffer, filename };
+			result = { data: buffer };
 		} else {
-			result = await parse(buffer, givenpath, filename);
+			result = await parse(buffer, givenpath, fileName);
 		}
 		result.modified ??= true;
 
@@ -85,7 +86,7 @@ export async function fordir(options) {
 			writeQuene.push({
 				finalPath: givenpath,
 				data: result.data,
-				fileName: result.filename ?? filename,
+				fileName: result.fileName ?? fileName,
 			});
 	}
 

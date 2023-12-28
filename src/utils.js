@@ -1,3 +1,5 @@
+import fs from "fs/promises";
+import os from "os";
 import path from "path";
 import url from "url";
 
@@ -35,4 +37,44 @@ export function pathInfo(metaUrl) {
 			return path.join(__dirname, ...to);
 		},
 	};
+}
+
+/**
+ * The function `writeJSON` writes a JSON object to a file, with the option to replace LF line endings
+ * with CRLF line endings.
+ * @param {string} path - File path where the JSON data will be written to. It should
+ * be a string representing the file path, including the file name and extension.
+ * @param {object} json - Object that you want to write to a JSON file.
+ * It will be converted to a JSON string using `JSON.stringify()` before writing it to the file.
+ * @returns {ReturnType<fs['writeFile']>}
+ */
+export function writeJSON(path, json) {
+	return fs.writeFile(path, toCRLF(JSON.stringify(json, null, 2)));
+}
+
+/**
+ * Reads and parses json from file
+ * @param {string} path - Path to file
+ */
+export async function readJSON(path) {
+	return JSON.parse(await fs.readFile(path, "utf-8"));
+}
+
+/**
+ * LF string end is bad for git, replacing it to CRLF
+ * @param {string} text
+ */
+export function toCRLF(text) {
+	return text.replace(/\n/g, "\r\n");
+}
+
+/**
+ * @param {string} text
+ */
+export function addQuotes(
+	text,
+	{ when = os.platform() !== "win32", quote = "" } = {}
+) {
+	if (when) return `${quote}${text}${quote}`;
+	return text;
 }

@@ -1,70 +1,79 @@
-export namespace Commiter {
+/**
+ * @typedef {{type?: 'fix' | 'update' | "release"; info?: string }} CommitMeta
+ */
+/**
+ * @typedef {object} CommitHookArgument
+ * @property {[number, number, number]} version
+ * @property {[number, number, number]} prev_version
+ * @property {import("./types.js").Package} package
+ * @property {string} message
+ * @property {string} type
+ * @property {string} info
+ */
+export class CommitManager {
+    /**
+     * Returns array of relative pathes for each edited module
+     */
+    static getEditedSubmodules(): Promise<string[]>;
+    /**
+     * Returns argument for git pathspec which excludes provided pathes
+     * @param {string[]} pathes
+     */
+    static exceptFor(pathes: string[]): string;
+    /**
+     * @param {undefined | string} cwd
+     */
+    constructor(cwd: undefined | string);
+    logger: LeafyLogger;
+    package: PackageJSON;
+    /** @type {(s: string) => Promise<number>} */
+    execute: (s: string) => Promise<number>;
     /**
      * Replace this function if you want to do something before commit
-     * @param {CommitArgument} arg
+     * @param {CommitHookArgument} arg
      */
-    export function precommit(arg: CommitArgument): Promise<void>;
+    precommit(arg: CommitHookArgument): Promise<void>;
     /**
      * Replace this function if you want to do something after commit
-     * @param {CommitArgument} arg
+     * @param {CommitHookArgument} arg
      */
-    export function postcommit(arg: CommitArgument): Promise<void>;
+    postcommit(arg: CommitHookArgument): Promise<void>;
     /**
      * Runs this structure:
      *
      * ```shell
+     * git add ./
      * precommit
      * git commit -a
      * postcommit
      * ```
-     * @readonly
+     * @param {CommitMeta & {add?: string, config?: Record<CommitMeta['type'],[number, string]>}} p
      */
-    export function commit({ type, info }?: {
-        type?: string;
-        info?: string;
+    commit({ type, info, add, config, }?: CommitMeta & {
+        add?: string;
+        config?: Record<CommitMeta['type'], [number, string]>;
     }): Promise<void>;
     /**
-     * Runs this structure:
-     * ```shell
-     * git add ./
-     *   precommit
-     *   git commit -a
-     *   postcommit
-     * git push
-     * ```
-     * @readonly
+     * Runs package.json's scripts build field
      */
-    export function add_commit_push({ type, info }?: {
-        type?: string;
-        info?: string;
-    }): Promise<void>;
-    /**
-     * Runs this structure:
-     * ```shell
-     * scripts.build
-     *   git add ./
-     *     precommit
-     *     git commit -a
-     *     postcommit
-     *   git push
-     * ```
-     * @readonly
-     */
-    export function build(): Promise<void>;
+    build(): Promise<void>;
     /**
      * Runs script from package.json
      * @param {string} scriptName Script to run
      * @param {string[]} args Args to add
-     * @readonly
      */
-    export function runPackageScript(scriptName: string, args?: string[]): Promise<any>;
-    export function checkForCommitArgs(helpText?: string): Promise<{
-        type: string;
-        info: string;
-    }>;
-    export { PACKAGE as package };
+    runPackageScript(scriptName: string, args?: string[]): Promise<boolean>;
+    /**
+     * @returns  {Promise<CommitMeta>}
+     */
+    parseArgs(helpText?: string): Promise<CommitMeta>;
 }
-export type CommitArgument = {
+export const Committer: CommitManager;
+export type CommitMeta = {
+    type?: 'fix' | 'update' | "release";
+    info?: string;
+};
+export type CommitHookArgument = {
     version: [number, number, number];
     prev_version: [number, number, number];
     package: import("./types.js").Package;
@@ -72,7 +81,6 @@ export type CommitArgument = {
     type: string;
     info: string;
 };
-declare const PACKAGE: PackageJSON;
+import { LeafyLogger } from "./LeafyLogger.js";
 import { PackageJSON } from "./package.js";
-export {};
 //# sourceMappingURL=commit.d.ts.map
