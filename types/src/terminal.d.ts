@@ -35,12 +35,14 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
     options?: T;
 }): Promise<import("./types.js").CustomParseArgReturn<T>>;
 /**
+ * @template {boolean} T
  * @typedef {{
  *   failedTo: string;
  *   ignore?: (error: child_process.ExecException, stderr: string) => boolean
  *   context?: object;
  *   logger?: LeafyLogger
  *   throws?: boolean
+ *   fullResult?: T
  * }} ExecAsyncOptions
  */
 /**
@@ -52,28 +54,31 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
  */
 /**
  * Runs provided command
+ * @template {boolean} [T=false]
  * @param {string} command - Command to run
  * @param {Partial<child_process.ExecOptions>} options
- * @param {ExecAsyncOptions} [errorHandler]
- * @returns {Promise<string>}
+ * @param {ExecAsyncOptions<T>} [errorHandler]
+ * @returns {Promise<T extends true ? ExecAsyncInfo : string>}
  */
-export function execAsync(command: string, options: Partial<child_process.ExecOptions>, errorHandler?: ExecAsyncOptions): Promise<string>;
+export function execAsync<T extends boolean = false>(command: string, options: Partial<child_process.ExecOptions>, errorHandler?: ExecAsyncOptions<T>): Promise<T extends true ? ExecAsyncInfo : string>;
 export namespace execAsync {
     /**
      * Higher-order function that returns a new function with default values
+     * @template {boolean} [T=false]
      * @param {import("child_process").ExecOptions} defaults - Default options object
-     * @param {Partial<ExecAsyncOptions>} [errorHandlerDefaults]
-     * @returns {(command: string, options: ExecAsyncOptions) => ReturnType<execAsync>}
+     * @param {Partial<ExecAsyncOptions<T>>} [errorHandlerDefaults]
+     * @returns {(command: string, options: ExecAsyncOptions<T>) => ReturnType<typeof execAsync<T>>}
      */
-    export function withDefaults(defaults: child_process.ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions>): (command: string, options: ExecAsyncOptions) => Promise<string>;
+    export function withDefaults<T_1 extends boolean = false>(defaults: child_process.ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions<T_1>>): (command: string, options: ExecAsyncOptions<T_1>) => Promise<T_1 extends true ? ExecAsyncInfo : string>;
     export { ExecAsyncError as error };
 }
-export type ExecAsyncOptions = {
+export type ExecAsyncOptions<T extends boolean> = {
     failedTo: string;
     ignore?: (error: child_process.ExecException, stderr: string) => boolean;
     context?: object;
     logger?: LeafyLogger;
     throws?: boolean;
+    fullResult?: T;
 };
 export type ExecAsyncInfo = {
     stdout: string;

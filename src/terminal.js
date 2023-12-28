@@ -113,12 +113,14 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
   }
 }
 /**
+ * @template {boolean} T
  * @typedef {{
  *   failedTo: string;
  *   ignore?: (error: child_process.ExecException, stderr: string) => boolean
  *   context?: object;
  *   logger?: LeafyLogger
  *   throws?: boolean
+ *   fullResult?: T
  * }} ExecAsyncOptions
  */
 
@@ -132,10 +134,11 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
 
 /**
  * Runs provided command
+ * @template {boolean} [T=false]
  * @param {string} command - Command to run
  * @param {Partial<child_process.ExecOptions>} options
- * @param {ExecAsyncOptions} [errorHandler]
- * @returns {Promise<string>}
+ * @param {ExecAsyncOptions<T>} [errorHandler]
+ * @returns {Promise<T extends true ? ExecAsyncInfo : string>}
  */
 export async function execAsync(command, options, errorHandler) {
   /** @type {PromiseHook<number>} */
@@ -164,20 +167,24 @@ export async function execAsync(command, options, errorHandler) {
 
     errorHandler.logger ??= logger
     errorHandler.logger.error('Failed to ' + errorHandler.failedTo, {
-      error: result.error,
+      error: info.error,
+      stderr: info.stderr,
+      stdout: info.stdout,
       ...(errorHandler.context ?? {}),
     })
     if (errorHandler.throws ?? true) throw new execAsync.error(result)
   }
 
-  return result.stdout
+  // @ts-ignore
+  return errorHandler.fullResult ? result : result.stdout
 }
 
 /**
  * Higher-order function that returns a new function with default values
+ * @template {boolean} [T=false]
  * @param {import("child_process").ExecOptions} defaults - Default options object
- * @param {Partial<ExecAsyncOptions>} [errorHandlerDefaults]
- * @returns {(command: string, options: ExecAsyncOptions) => ReturnType<execAsync>}
+ * @param {Partial<ExecAsyncOptions<T>>} [errorHandlerDefaults]
+ * @returns {(command: string, options: ExecAsyncOptions<T>) => ReturnType<typeof execAsync<T>>}
  */
 execAsync.withDefaults =
   (defaults, errorHandlerDefaults = {}) =>

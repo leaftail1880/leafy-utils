@@ -29,7 +29,7 @@ export class CommitManager {
      */
     constructor(cwd: undefined | string);
     package: PackageJSON;
-    exec: (command: string, options: import("./terminal.js").ExecAsyncOptions) => Promise<string>;
+    exec: (command: string, options: import("./terminal.js").ExecAsyncOptions<false>) => Promise<string>;
     logger: LeafyLogger;
     /**
      * Replace this function if you want to do something before commit
