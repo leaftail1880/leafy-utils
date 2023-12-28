@@ -129,6 +129,7 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
  *   stdout: string,
  *   stderr: string,
  *   error: import("child_process").ExecException | null
+ *   code: number
  * }} ExecAsyncInfo
  */
 
@@ -143,7 +144,7 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
 export async function execAsync(command, options, errorHandler) {
   /** @type {PromiseHook<number>} */
   const codeHook = new PromiseHook()
-  /** @type {PromiseHook<ExecAsyncInfo>} */
+  /** @type {PromiseHook<Omit<ExecAsyncInfo, 'code'>>} */
   const infoHook = new PromiseHook()
 
   child_process
@@ -163,15 +164,13 @@ export async function execAsync(command, options, errorHandler) {
 
   errorHandler.ignore ??= () => false
   if (code !== 0 && !errorHandler.ignore(info.error, info.stderr)) {
-    if (info.stderr && !info.error) info.error = new Error(info.stderr)
-
     errorHandler.logger ??= logger
     errorHandler.logger.error('Failed to ' + errorHandler.failedTo, {
       error: info.error,
-      stderr: info.stderr,
-      stdout: info.stdout,
       ...(errorHandler.context ?? {}),
     })
+    if (info.stdout) errorHandler.logger.error(info.stdout)
+    if (info.stderr) errorHandler.logger.error(info.stderr)
     if (errorHandler.throws ?? true) throw new execAsync.error(result)
   }
 
@@ -192,7 +191,7 @@ execAsync.withDefaults =
     execAsync(command, defaults, { ...errorHandlerDefaults, ...options })
 
 execAsync.error = class ExecAsyncError {
-  /** @param {ExecAsyncInfo & { code: number }} p */
+  /** @param {ExecAsyncInfo} p */
   constructor({ error, stderr, stdout, code }) {
     this.error = error
     this.stderr = stderr

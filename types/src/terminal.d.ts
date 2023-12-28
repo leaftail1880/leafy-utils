@@ -50,6 +50,7 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
  *   stdout: string,
  *   stderr: string,
  *   error: import("child_process").ExecException | null
+ *   code: number
  * }} ExecAsyncInfo
  */
 /**
@@ -84,13 +85,12 @@ export type ExecAsyncInfo = {
     stdout: string;
     stderr: string;
     error: import("child_process").ExecException | null;
+    code: number;
 };
 import child_process from 'child_process';
 declare class ExecAsyncError {
-    /** @param {ExecAsyncInfo & { code: number }} p */
-    constructor({ error, stderr, stdout, code }: ExecAsyncInfo & {
-        code: number;
-    });
+    /** @param {ExecAsyncInfo} p */
+    constructor({ error, stderr, stdout, code }: ExecAsyncInfo);
     error: child_process.ExecException;
     stderr: string;
     stdout: string;
