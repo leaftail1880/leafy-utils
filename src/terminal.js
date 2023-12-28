@@ -164,8 +164,7 @@ export async function execAsync(command, options, errorHandler) {
 
     errorHandler.logger ??= logger
     errorHandler.logger.error('Failed to ' + errorHandler.failedTo, {
-      command,
-      ...result,
+      error: result.error,
       ...(errorHandler.context ?? {}),
     })
     if (errorHandler.throws ?? true) throw new execAsync.error(result)
