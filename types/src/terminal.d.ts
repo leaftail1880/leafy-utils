@@ -73,6 +73,16 @@ export namespace execAsync {
     export function withDefaults<T_1 extends boolean = false>(defaults: child_process.ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions<T_1>>): (command: string, options: ExecAsyncOptions<T_1>) => Promise<T_1 extends true ? ExecAsyncInfo : string>;
     export { ExecAsyncError as error };
 }
+/**
+ * Spawns given command and resolves on command exit with exit code and successfull status
+ * @param {string} command
+ * @param {import('child_process').SpawnOptions} options
+ * @returns {Promise<{code: number, successfull: boolean}>}
+ */
+export function spawnAsync(command: string, options: import('child_process').SpawnOptions): Promise<{
+    code: number;
+    successfull: boolean;
+}>;
 export type ExecAsyncOptions<T extends boolean> = {
     failedTo: string;
     ignore?: (error: child_process.ExecException, stderr: string) => boolean;

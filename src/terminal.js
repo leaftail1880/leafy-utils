@@ -179,6 +179,20 @@ export async function execAsync(command, options, errorHandler) {
 }
 
 /**
+ * Spawns given command and resolves on command exit with exit code and successfull status
+ * @param {string} command
+ * @param {import('child_process').SpawnOptions} options
+ * @returns {Promise<{code: number, successfull: boolean}>}
+ */
+export function spawnAsync(command, options) {
+  return new Promise(resolve => {
+    child_process.spawn(command, options).on('exit', code => {
+      resolve({ code, successfull: code === 0 })
+    })
+  })
+}
+
+/**
  * Higher-order function that returns a new function with default values
  * @template {boolean} [T=false]
  * @param {import("child_process").ExecOptions} defaults - Default options object

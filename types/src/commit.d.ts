@@ -51,16 +51,26 @@ export class CommitManager {
      * Runs this structure:
      *
      * ```shell
-     * git add ./
      * precommit
-     * git commit -a
+     * git add {arg} (if not false)
+     * git commit
      * postcommit
+     * git push
      * ```
-     * @param {CommitMeta & {add?: string, config?: Record<CommitMeta['type'],[number, string]>}} p
+     * @param {CommitMeta & {
+     *   add?: string | false,
+     *   config?: Record<CommitMeta['type'],[number, string]>,
+     *   origin?: string,
+     *   branch?: string
+     *   pushDryRun?: boolean,
+     * }} p
      */
-    commit({ type, info, add, config, }?: CommitMeta & {
-        add?: string;
+    commit({ type, info, add, origin, branch, pushDryRun, config, }?: CommitMeta & {
+        add?: string | false;
         config?: Record<CommitMeta['type'], [number, string]>;
+        origin?: string;
+        branch?: string;
+        pushDryRun?: boolean;
     }): Promise<void>;
     /**
      * Runs package.json's scripts build field

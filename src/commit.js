@@ -1,6 +1,6 @@
 import { LeafyLogger } from './LeafyLogger.js'
 import { PackageJSON } from './package.js'
-import { execAsync, parseArgs } from './terminal.js'
+import { execAsync, parseArgs, spawnAsync } from './terminal.js'
 import { addQuotes } from './utils.js'
 
 /**
@@ -86,17 +86,27 @@ export class CommitManager {
    * Runs this structure:
    *
    * ```shell
-   * git add ./
    * precommit
-   * git commit -a
+   * git add {arg} (if not false)
+   * git commit
    * postcommit
+   * git push
    * ```
-   * @param {CommitMeta & {add?: string, config?: Record<CommitMeta['type'],[number, string]>}} p
+   * @param {CommitMeta & {
+   *   add?: string | false,
+   *   config?: Record<CommitMeta['type'],[number, string]>,
+   *   origin?: string,
+   *   branch?: string
+   *   pushDryRun?: boolean,
+   * }} p
    */
   async commit({
     type = 'fix',
     info = '',
     add = './',
+    origin = 'origin',
+    branch = 'HEAD',
+    pushDryRun = false,
     config = {
       release: [0, 'Release'],
       update: [1, 'Update'],
@@ -144,16 +154,19 @@ export class CommitManager {
 
     // We need to save package before it will be added
     await this.package.save()
-    await this.exec('git add ' + add, {
-      failedTo: 'add files',
-      context: { arg: add },
-    })
-    await this.exec(`git commit -a --message="${message}"`, {
+
+    if (add) {
+      await this.exec('git add ' + add, {
+        failedTo: 'add files',
+        context: { arg: add },
+      })
+    }
+    await this.exec(`git commit --message="${message}"`, {
       failedTo: 'commit',
       context: { message },
     })
     await this.postcommit(args)
-    await this.exec('git push', { failedTo: 'push' })
+    await this.exec(`git push ${origin} ${branch} ${pushDryRun ? '--dry-run' : ''}`, { failedTo: 'push' })
   }
   /**
    * Runs package.json's scripts build field
@@ -183,9 +196,14 @@ export class CommitManager {
     const script = scripts[scriptName]
     const arg = args.map(e => (e.includes(' ') ? `"${e}"` : e)).join(' ')
 
-    await this.exec(`${script} ${arg ? arg : ''}`, {
-      failedTo: 'execute package.json script',
+    const result = await spawnAsync(`${script} ${arg ? arg : ''}`, {
+      shell: true,
+      stdio: 'inherit',
     })
+
+    if (!result.successfull) {
+      this.logger.error(`'${script}' exited with status code ${result.code}.`)
+    }
     return true
   }
   /**
