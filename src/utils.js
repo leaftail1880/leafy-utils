@@ -46,7 +46,7 @@ export function pathInfo(metaUrl) {
  * @returns {ReturnType<fs['writeFile']>}
  */
 export function writeJSON(path, json) {
-  return fs.writeFile(path, toCRLF(JSON.stringify(json, null, 2)))
+  return fs.writeFile(path, toCRLF(JSON.stringify(json, null, 2) + '\n'))
 }
 
 /**
