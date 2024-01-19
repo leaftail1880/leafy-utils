@@ -1,6 +1,7 @@
 import { existsSync } from 'fs'
 import fs from 'fs/promises'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import { LeafyLogger } from './LeafyLogger.js'
 import { execAsync } from './terminal.js'
 
@@ -18,39 +19,32 @@ export const logger = new LeafyLogger({ prefix: 'gitdeps' })
  * 		path: "RP",
  * 	},
  * 	dependencies: {
- * 		"ui/": "/ui/",
- * 		"textures/": "/textures/",
+ * 		"ui/": "./ui/",
+ * 		"textures/": "./textures/",
  * 	},
  * });
  * ```
  * @param {import("./types.js").GitDependency} config
  */
-export function defineGitDependency(config) {
-  return config
-}
+export async function defineGitDependency(config) {
+  let source = new Error().stack ?? ''
+  try {
+    source = source.split('\n')[2] ?? ''
+    source = source.replace(/\s+at\s+(?:\w+\s+)?\(?(.+)\)?/, '$1')
+    source = fileURLToPath(source)
+    source = path.parse(source).name
+  } catch (e) {}
 
-/**
- * Inits or updates dependencies
- * @param {object} o
- * {files: string[], mode?: "init" | "update", filesBase?: string}
- * @param {string[]} o.files List of files relative to fileBase. Each should `
- * export default defineGitDependency({...})`
- * @param {string} [o.filesBase] Base to resolve files from
- * @param {"init" | "update"} [o.mode] Mode. By default, will be init if there is init argv, otherwise update
- */
-export async function SyncGitDependencies({
-  files = [],
-  filesBase = process.cwd(),
-  mode = process.argv.find(e => e === 'init') ? 'init' : 'update',
-}) {
-  for (const file of files) {
-    /** @type {import("./types.js").GitDependency} */
-    const config = (await import('file://' + path.join(filesBase, file))).default
-    const remoteName = config.remote.name ?? path.parse(file).name
-    const execOptions = { cwd: path.dirname(file) }
-    const exec = execAsync.withDefaults(execOptions, { logger })
+  try {
+    const execOptions = { cwd: process.cwd() }
+    const exec = execAsync.withDefaults({}, { logger })
+    const remoteName = config.remote.name || source || 'gitdep'
 
-    if (mode === 'init') {
+    const remotes = (await exec(`git remote`, { failedTo: 'get remote list' }))
+      .split('\n')
+      .map(e => e.trim())
+      .filter(Boolean)
+    if (!remotes.includes(remoteName)) {
       // Add remote
       await exec(`git remote add ${remoteName} ${config.remote.url} -f --no-tags -t=${config.remote.branch}`, {
         failedTo: 'Add remote',
@@ -63,96 +57,103 @@ export async function SyncGitDependencies({
         },
       })
 
-      logger.success('Inited successfully')
-    } else {
-      // Merge refs
-      await exec(`git merge -s ours --no-commit ${remoteName}/${config.remote.branch}`, {
-        failedTo: 'merge refs',
-        ignore: (_, stderr) => stderr.includes('fatal: refusing to merge unrelated histories'),
+      logger.success(`Initialized remote with name ${remoteName} successfully!`)
+    }
+
+    // Fetch updates
+    await exec(`git fetch ${remoteName} ${config.remote.branch}`, {
+      failedTo: 'fetch updates',
+    })
+
+    // Merge refs
+    await exec(`git merge -s ours --no-commit ${remoteName}/${config.remote.branch}`, {
+      failedTo: 'merge refs',
+      ignore: (_, stderr) => stderr.includes('fatal: refusing to merge unrelated histories'),
+    })
+
+    // Get git dir
+    execOptions.cwd = (
+      await exec('git rev-parse --show-toplevel', {
+        failedTo: 'get git dir',
       })
+    ).trim()
+    logger.log('Working directory:', execOptions.cwd.replace(process.cwd().replace(/\\/g, '/'), '') || '.')
 
-      // Get git dir
-      execOptions.cwd = (
-        await exec('git rev-parse --show-toplevel', {
-          failedTo: 'get git dir',
+    // Update files
+    for (let [remote, options] of Object.entries(config.dependencies)) {
+      if (typeof options === 'string') options = { localPath: options }
+      if (!options.file && path.parse(options.localPath).ext) {
+        logger.warn(
+          `Threating '${options.localPath}' as a file. Replace ${remote} dependency to { localPath: '${options.localPath}', file: true } to remove this warning`
+        )
+        options.file = true
+      }
+
+      // Parse remote path relative to specified base
+      const remotePath = path.join(config.remote.path ?? '', remote).replace(/\\/g, '/')
+
+      // Parse local path relative to specified base and remove starting /
+      const local = path
+        .join(config.path ?? '', options.localPath)
+        .replace(/\\/g, '/')
+        .replace(/^\//g, '')
+
+      logger.info('Local dependency path:', local)
+
+      // Define temp path
+      const temp = '&&_git_dep_temp_&&'
+
+      const fullLocal = path.join(execOptions.cwd, local)
+      const fullTemp = path.join(execOptions.cwd, temp)
+
+      async function restoreStagedTemp() {
+        const changes = await exec(`git status -z -uall`, {
+          failedTo: 'list changed files',
         })
-      ).trim()
-      logger.log('Dir:', execOptions.cwd.replace(process.cwd().replace(/\\/g, '/'), ''))
+        if (!changes.split('\x00').find(e => e.includes('A') && e.includes(temp))) return
 
-      // Update files
-      for (let [remote, options] of Object.entries(config.dependencies)) {
-        if (typeof options === 'string') options = { localPath: options }
-        if (!options.file && path.parse(options.localPath).ext) {
-          logger.warn(
-            `Threating '${options.localPath}' as a file. Replace ${remote} dependency to { localPath: '${options.localPath}', file: true } to remove this warning`
-          )
-          options.file = true
-        }
-
-        // Parse remote path relative to specified base
-        const remotePath = path.join(config.remote.path ?? '', remote).replace(/\\/g, '/')
-
-        // Parse local path relative to specified base and remove starting /
-        const local = path
-          .join(config.path ?? '', options.localPath)
-          .replace(/\\/g, '/')
-          .replace(/^\//g, '')
-
-        logger.info('Dep:', local)
-
-        // Define temp path
-        const temp = '&&_git_dep_temp_&&'
-
-        const fullLocal = path.join(execOptions.cwd, local)
-        const fullTemp = path.join(execOptions.cwd, temp)
-
-        async function restoreStagedTemp() {
-          const changes = await exec(`git status -z -uall`, {
-            failedTo: 'list changed files',
-          })
-          if (!changes.split('\x00').find(e => e.includes('A') && e.includes(temp))) return
-
-          await exec(`git restore --staged "${temp}/*"`, {
-            failedTo: 'restore from staged',
-            context: {
-              changes,
-              gitDir: execOptions.cwd,
-              files: await fs.readdir(execOptions.cwd),
-            },
-          })
-        }
-
-        if (existsSync(fullTemp)) {
-          // Restore them from stage
-          await restoreStagedTemp()
-
-          // Clear temp
-          await fs.rm(fullTemp, {
-            recursive: true,
-            force: true,
-          })
-        }
-
-        // Get remote file(s)
-        await exec(`git read-tree --prefix="${temp}" -u "${remoteName}/${config.remote.branch}:${remotePath}"`, {
-          failedTo: 'Get remote files',
+        await exec(`git restore --staged "${temp}/*"`, {
+          failedTo: 'restore from staged',
+          context: {
+            changes,
+            gitDir: execOptions.cwd,
+            files: await fs.readdir(execOptions.cwd),
+          },
         })
+      }
 
+      if (existsSync(fullTemp)) {
         // Restore them from stage
         await restoreStagedTemp()
 
-        // Merge changes
-        await fs.cp(fullTemp, fullLocal, { force: true, recursive: true })
+        // Clear temp
         await fs.rm(fullTemp, {
           recursive: true,
           force: true,
         })
-
-        // Apply changes
-        await restoreStagedTemp()
       }
-    }
-  }
 
-  logger.success('Everything is up to date')
+      // Get remote file(s)
+      await exec(`git read-tree --prefix="${temp}" -u "${remoteName}/${config.remote.branch}:${remotePath}"`, {
+        failedTo: 'get remote files',
+      })
+
+      // Restore them from stage
+      await restoreStagedTemp()
+
+      // Merge changes
+      await fs.cp(fullTemp, fullLocal, { force: true, recursive: true })
+      await fs.rm(fullTemp, {
+        recursive: true,
+        force: true,
+      })
+
+      // Apply changes
+      await restoreStagedTemp()
+    }
+
+    logger.success('Everything is up to date')
+  } catch (e) {
+    if (!(e instanceof execAsync.error)) logger.error(e)
+  }
 }

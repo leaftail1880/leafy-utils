@@ -1,1 +1,1 @@
-{"version":3,"file":"gitdep.d.ts","sourceRoot":"","sources":["../../src/gitdep.js"],"names":[],"mappings":"AAQA;;;;;;;;;;;;;;;;;;GAkBG;AACH,4CAFW,OAAO,YAAY,EAAE,aAAa,sCAI5C;AAED;;;;;;;;GAQG;AACH;IALuB,KAAK,EAAjB,MAAM,EAAE;IAEG,SAAS,GAApB,MAAM;IACgB,IAAI,GAA1B,MAAM,GAAG,QAAQ;kBAuH3B;AAvJD,iCAA4D;4BAHhC,kBAAkB"}
+{"version":3,"file":"gitdep.d.ts","sourceRoot":"","sources":["../../src/gitdep.js"],"names":[],"mappings":"AASA;;;;;;;;;;;;;;;;;;GAkBG;AACH,4CAFW,OAAO,YAAY,EAAE,aAAa,iBAoI5C;AAvJD,iCAA4D;4BAHhC,kBAAkB"}
