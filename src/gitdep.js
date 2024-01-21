@@ -27,18 +27,19 @@ export const logger = new LeafyLogger({ prefix: 'gitdeps' })
  * @param {import("./types.js").GitDependency} config
  */
 export async function defineGitDependency(config) {
-  let source = new Error().stack ?? ''
+  let filename = 'gitdep'
   try {
-    source = source.split('\n')[2] ?? ''
-    source = source.replace(/\s+at\s+(?:\w+\s+)?\(?(.+)\)?/, '$1')
-    source = fileURLToPath(source)
-    source = path.parse(source).name
+    filename = new Error().stack
+    filename = filename.split('\n')[2] ?? ''
+    filename = filename.replace(/\s+at\s+(?:\w+\s+)?\(?(.+)\)?/, '$1')
+    filename = fileURLToPath(filename)
+    filename = path.parse(filename).name
   } catch (e) {}
 
   try {
     const execOptions = { cwd: process.cwd() }
     const exec = execAsync.withDefaults({}, { logger })
-    const remoteName = config.remote.name || source || 'gitdep'
+    const remoteName = config.remote.name || filename
 
     const remotes = (await exec(`git remote`, { failedTo: 'get remote list' }))
       .split('\n')

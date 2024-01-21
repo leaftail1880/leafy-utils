@@ -63,7 +63,6 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
       ...options,
     },
     allowPositionals: true,
-    strict: false,
   })
   let [command, ...input] = parsed_options.positionals
   const raw_input = input.join(' ')
