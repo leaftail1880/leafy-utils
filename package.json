@@ -1,6 +1,6 @@
 {
   "name": "leafy-utils",
-  "version": "6.2.0",
+  "version": "6.3.0",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "types": "types/exports.d.ts",

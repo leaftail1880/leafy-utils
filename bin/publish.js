@@ -2,7 +2,9 @@
 // @ts-check
 
 import { spawn } from 'child_process'
+import path from 'path'
 import { Committer } from '../src/commit.js'
+import { PackageJSON } from '../src/package.js'
 
 async function main() {
   if (await Committer.runPackageScript('publish', process.argv.slice(2))) return
@@ -30,11 +32,19 @@ async function main() {
     }
   )
 
+  const pkg = new PackageJSON()
+  try {
+    await pkg.read()
+  } catch (e) {
+    Committer.logger.error(`Failed to read ${path.join(process.cwd(), 'package.json')}:`, e)
+  }
+
   await Committer.build()
   await Committer.commit(args)
 
   if (args.options.n) args.options.publishCommand = 'npm publish'
-  if (args.options.y) args.options.publishCommand = 'yarn npm publish'
+  if (args.options.y || pkg.content.packageManager.startsWith('yarn@v4'))
+    args.options.publishCommand = 'yarn npm publish'
   spawn(args.options.publishCommand ?? 'yarn publish --non-interactive', {
     stdio: 'inherit',
     shell: true,

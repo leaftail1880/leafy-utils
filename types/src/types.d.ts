@@ -1,4 +1,4 @@
-export interface Package {
+export interface PackageMeta {
     name: string;
     version: string;
     description?: string;
@@ -13,6 +13,7 @@ export interface Package {
         types?: string;
     }>;
 }
+export type Package = PackageMeta & Record<string, any>;
 export interface CustomEmitter<events extends Record<string | symbol, any>> {
     on<N extends keyof events>(eventName: N, listener: (arg: events[N]) => void): CustomEmitter<events>;
     off<N extends keyof events>(eventName: N, listener: (arg: events[N]) => void): CustomEmitter<events>;

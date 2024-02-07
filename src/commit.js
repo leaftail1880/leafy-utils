@@ -14,7 +14,7 @@ import { addQuotes } from './utils.js'
  * @typedef {object} CommitHookArgument
  * @property {[number, number, number]} version
  * @property {[number, number, number]} prev_version
- * @property {import("./types.js").Package} package
+ * @property {import("./types.js").PackageMeta} package
  * @property {string} message
  * @property {string} type
  * @property {string} info

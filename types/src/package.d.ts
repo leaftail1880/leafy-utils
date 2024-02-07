@@ -5,15 +5,15 @@ export class PackageJSON {
     constructor(pathToPackage?: string, fileName?: string);
     /** @private */
     private PACKAGE_PATH;
-    /** @private @type {import("./types.js").Package | null} */
+    /** @private @type {import("./types.js").PackageMeta | null} */
     private CONTENT;
     /** @private */
     private MODIFIED;
     /**
      * Returns a proxy for data, which sets modified on modify
-     * @returns {import("./types.js").Package} A proxy object.
+     * @returns {import("./types.js").PackageMeta} A proxy object.
      */
-    get content(): import("./types.js").Package;
+    get content(): import("./types.js").PackageMeta;
     /**
      * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
      */
