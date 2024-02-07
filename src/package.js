@@ -5,7 +5,7 @@ export class PackageJSON {
   /** @private */
   PACKAGE_PATH = ''
 
-  /** @private @type {import("./types.js").PackageMeta | null} */
+  /** @private @type {import("./types.js").Package | null} */
   CONTENT = null
 
   /** @private */
@@ -20,7 +20,7 @@ export class PackageJSON {
 
   /**
    * Returns a proxy for data, which sets modified on modify
-   * @returns {import("./types.js").PackageMeta} A proxy object.
+   * @returns {import("./types.js").Package} A proxy object.
    */
   get content() {
     const checkModify = (status = true) => {

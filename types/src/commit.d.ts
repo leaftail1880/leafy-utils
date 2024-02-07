@@ -8,7 +8,7 @@
  * @typedef {object} CommitHookArgument
  * @property {[number, number, number]} version
  * @property {[number, number, number]} prev_version
- * @property {import("./types.js").PackageMeta} package
+ * @property {import("./types.js").Package} package
  * @property {string} message
  * @property {string} type
  * @property {string} info
@@ -105,7 +105,7 @@ export type CommitMeta = {
 export type CommitHookArgument = {
     version: [number, number, number];
     prev_version: [number, number, number];
-    package: import("./types.js").PackageMeta;
+    package: import("./types.js").Package;
     message: string;
     type: string;
     info: string;

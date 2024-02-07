@@ -43,6 +43,7 @@ async function main() {
   await Committer.commit(args)
 
   if (args.options.n) args.options.publishCommand = 'npm publish'
+  console.debug({ a: pkg.content })
   if (args.options.y || pkg.content.packageManager.startsWith('yarn@v4'))
     args.options.publishCommand = 'yarn npm publish'
   spawn(args.options.publishCommand ?? 'yarn publish --non-interactive', {
