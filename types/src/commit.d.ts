@@ -22,19 +22,23 @@ export class CommitManager {
      * Returns argument for git pathspec which excludes provided pathes
      * @param {string[]} pathes
      */
-    static exceptFor(pathes: string[]): string;
+    static exceptFor(pathes: string[], positional?: string): string;
     static logger: LeafyLogger;
     /**
      * @param {undefined | string} cwd
+     * @param {object} [o]
+     * @param {boolean} [o.prefix] Whenther to include cwd into prefix or not
      */
-    constructor(cwd: undefined | string);
+    constructor(cwd: undefined | string, { prefix }?: {
+        prefix?: boolean;
+    });
     package: PackageJSON;
+    logger: LeafyLogger;
     /**
      * @param {string} command
      * @param {import('./terminal.js').ExecAsyncOptions<false>} options
      */
     exec: (command: string, options: import('./terminal.js').ExecAsyncOptions<false>) => Promise<string>;
-    logger: LeafyLogger;
     /**
      * Replace this function if you want to do something before commit
      * @param {CommitHookArgument} arg

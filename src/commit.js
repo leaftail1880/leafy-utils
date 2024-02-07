@@ -45,17 +45,20 @@ export class CommitManager {
    * Returns argument for git pathspec which excludes provided pathes
    * @param {string[]} pathes
    */
-  static exceptFor(pathes) {
-    return `-- ${pathes.map(e => addQuotes(`:!${e}`)).join(' ')}`
+  static exceptFor(pathes, positional = '--') {
+    return `${positional} ${pathes.map(e => addQuotes(`:!${e}`)).join(' ')}`
   }
 
   static logger = new LeafyLogger({ prefix: 'commit' })
 
   /**
    * @param {undefined | string} cwd
+   * @param {object} [o]
+   * @param {boolean} [o.prefix] Whenther to include cwd into prefix or not
    */
-  constructor(cwd) {
+  constructor(cwd, { prefix = false } = {}) {
     this.package = new PackageJSON(cwd)
+    this.logger = prefix ? new LeafyLogger({ prefix: `commit (${cwd})` }) : CommitManager.logger
 
     /**
      * @param {string} command
@@ -67,8 +70,6 @@ export class CommitManager {
       return output
     }
   }
-
-  logger = CommitManager.logger
 
   /**
    * Replace this function if you want to do something before commit
