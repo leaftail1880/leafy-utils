@@ -78,3 +78,7 @@ export interface CustomParseArgReturn<T extends CustomParseArgsConfig> {
   raw_input: string
   options: import('./types.js').CustomParsedArgs<T> & { help: boolean }
 }
+
+export type PartialParts<B, ThisArg = B> = {
+  [P in keyof B]?: B[P] extends (...param: infer param) => infer ret ? (this: ThisArg, ...param: param) => ret : B[P]
+}

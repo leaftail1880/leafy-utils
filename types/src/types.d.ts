@@ -76,4 +76,7 @@ export interface CustomParseArgReturn<T extends CustomParseArgsConfig> {
         help: boolean;
     };
 }
+export type PartialParts<B, ThisArg = B> = {
+    [P in keyof B]?: B[P] extends (...param: infer param) => infer ret ? (this: ThisArg, ...param: param) => ret : B[P];
+};
 //# sourceMappingURL=types.d.ts.map

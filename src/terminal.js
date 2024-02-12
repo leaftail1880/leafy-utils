@@ -1,4 +1,5 @@
-import child_process, { spawn } from 'child_process'
+import child_process from 'child_process'
+import readline from 'readline'
 import util from 'util'
 import { LeafyLogger } from './LeafyLogger.js'
 import { PromiseHook } from './utils.js'
@@ -38,7 +39,7 @@ export function print(...data) {
  */
 export function execute(command, cwd = undefined) {
   return new Promise((resolve, reject) => {
-    const process = spawn(command, { stdio: 'inherit', shell: true, cwd })
+    const process = child_process.spawn(command, { stdio: 'inherit', shell: true, cwd })
     process.on('exit', resolve)
     process.on('error', reject)
   })
@@ -212,4 +213,63 @@ execAsync.error = class ExecAsyncError {
     this.stdout = stdout
     this.code = code
   }
+}
+
+/**
+ *
+ * @param {object} o - Options
+ * @param {(line: string) => void} o.onLine
+ * @param {(s: string) => void} [o.stdout] - Function that writes to stdout. Defaults to process.stdout.write
+ * @param {(s: string) => void} [o.stderr] - Function that writes to stderr. Defaults to process.stderr.write
+ */
+export function readlineWithPersistentInput({
+  onLine,
+  stdout = process.stdout.write.bind(process.stdout),
+  stderr = process.stdout.write.bind(process.stdout),
+}) {
+  process.stdin.setEncoding('utf-8')
+
+  const rl = readline
+    .createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    })
+    .on('line', line => {
+      rl.prompt(true)
+      onLine(line)
+    })
+
+  LeafyLogger.patchAll(logger => {
+    logger.write.stdout = (...args) => {
+      // Actually logger.write only uses 0 element from args array
+      writeAndRestorePersistentInput(args[0], stdout)
+    }
+    logger.write.stderr = (...args) => {
+      // Actually logger.write only uses 0 element from args array
+      writeAndRestorePersistentInput(args[0], stderr)
+    }
+  })
+
+  /**
+   *
+   * @param {string} text
+   * @param {(s: string) => void} out
+   */
+  function writeAndRestorePersistentInput(text, out) {
+    if (!rl) return out(text)
+
+    // @ts-expect-error
+    const rows = rl.prevRows + 1
+
+    readline.moveCursor(process.stdout, 0, -rows)
+    out('\n')
+    readline.clearScreenDown(process.stdout)
+
+    out(text)
+
+    readline.moveCursor(process.stdout, 0, rows + 1)
+    rl.prompt(true)
+  }
+
+  return { readline: rl, write: writeAndRestorePersistentInput, stderr, stdout }
 }

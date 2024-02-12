@@ -22,6 +22,15 @@ export function pathInfo(metaUrl: string): {
     relative(...to: string[]): string;
 };
 /**
+ * Patches object
+ * @author ConMaster2112
+ * @template O
+ * @param {O} prototype
+ * @param {import('./types.js').PartialParts<O>} object
+ * @returns {O}
+ */
+export function OverTakes<O>(prototype: O, object: import("./types.js").PartialParts<O, O>): O;
+/**
  * The function `writeJSON` writes a JSON object to a file, with the option to replace LF line endings
  * with CRLF line endings.
  * @param {string} path - File path where the JSON data will be written to. It should

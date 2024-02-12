@@ -37,6 +37,24 @@ export function pathInfo(metaUrl) {
 }
 
 /**
+ * Patches object
+ * @author ConMaster2112
+ * @template O
+ * @param {O} prototype
+ * @param {import('./types.js').PartialParts<O>} object
+ * @returns {O}
+ */
+export function OverTakes(prototype, object) {
+  const prototypeOrigin = Object.setPrototypeOf(
+    Object.defineProperties({}, Object.getOwnPropertyDescriptors(prototype)),
+    Object.getPrototypeOf(prototype)
+  )
+  Object.setPrototypeOf(object, prototypeOrigin)
+  Object.defineProperties(prototype, Object.getOwnPropertyDescriptors(object))
+  return prototypeOrigin
+}
+
+/**
  * The function `writeJSON` writes a JSON object to a file, with the option to replace LF line endings
  * with CRLF line endings.
  * @param {string} path - File path where the JSON data will be written to. It should

@@ -1,4 +1,5 @@
 /// <reference types="node" />
+/// <reference types="node" />
 /**
  * Ask user for input any text
  * @param {string} [text] - Text to show before input like "Count: "
@@ -83,6 +84,23 @@ export function spawnAsync(command: string, options: import('child_process').Spa
     code: number;
     successfull: boolean;
 }>;
+/**
+ *
+ * @param {object} o - Options
+ * @param {(line: string) => void} o.onLine
+ * @param {(s: string) => void} [o.stdout] - Function that writes to stdout. Defaults to process.stdout.write
+ * @param {(s: string) => void} [o.stderr] - Function that writes to stderr. Defaults to process.stderr.write
+ */
+export function readlineWithPersistentInput({ onLine, stdout, stderr, }: {
+    onLine: (line: string) => void;
+    stdout?: (s: string) => void;
+    stderr?: (s: string) => void;
+}): {
+    readline: readline.Interface;
+    write: (text: string, out: (s: string) => void) => void;
+    stderr: (s: string) => void;
+    stdout: (s: string) => void;
+};
 export type ExecAsyncOptions<T extends boolean> = {
     failedTo: string;
     ignore?: (error: child_process.ExecException, stderr: string) => boolean;
@@ -106,6 +124,7 @@ declare class ExecAsyncError {
     stdout: string;
     code: number;
 }
+import readline from 'readline';
 declare const logger: LeafyLogger;
 import { LeafyLogger } from './LeafyLogger.js';
 export {};
