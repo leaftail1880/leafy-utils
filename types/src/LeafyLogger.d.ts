@@ -1,21 +1,33 @@
 /// <reference types="node" />
 /**
- * @typedef {(...text: string[]) => string} Colorizer
+ * @typedef {(...text: string[]) => string} Colorizer - Function used to colorize message
  */
 /**
- * @typedef {keyof (typeof LeafyLogger)['levels']} LeafyLogLevel
+ * @typedef {keyof (typeof LeafyLogger)['levels']} LeafyLogLevel - Union type which describes log level (e.g. 'log', 'error', etc)
+ */
+/**
+ * Easy log manipulations
  */
 export class LeafyLogger {
+    /**
+     * Defines basic colors used by logger
+     */
     static colors: {
-        yellow: string;
-        red: string;
         reset: string;
+        red: string;
+        yellow: string;
         cyan: string;
         greenBright: string;
+        white: string;
         darkGray: string;
+        bgRed: string;
     };
     /**
-     * @satisfies {Record<string, [string, boolean?]>}
+     * Defines the log levels and their corresponding colors.
+     * Each log level is represented by a key-value pair, where the key is the log level name
+     * (e.g., "error", "warn", "info") and the value is an array containing the color
+     * and an optional boolean flag which defines whenether is log level is error or not.
+     * @satisfies {Record<string, [color: string, error?: boolean]>}
      */
     static levels: {
         error: [string, true];
@@ -31,8 +43,11 @@ export class LeafyLogger {
      * @param {LeafyLogLevel} [level]
      */
     static createColoredWriter(color: Colorizer | string, error?: boolean, level?: LeafyLogLevel): (this: LeafyLogger, ...context?: any[]) => void;
+    /**
+     * Creates different levels of logger functions based on {@link LeafyLogger.levels}
+     */
     static createLevels(): Record<"error" | "warn" | "info" | "log" | "success" | "debug", (this: LeafyLogger, ...context?: any[]) => void>;
-    /** @deprecated Use `createColoredWriter` instead */
+    /** @deprecated Use {@link LeafyLogger.createColoredWriter createColoredWriter} instead */
     static createLogWriter: typeof LeafyLogger.createColoredWriter;
     /**
      * Sets error handlers for 'uncaughtException' and 'unhandledRejection'
@@ -41,6 +56,7 @@ export class LeafyLogger {
      */
     static handleGlobalExceptions(logger: LeafyLogger): void;
     /**
+     * Handler used to handle 'uncaughtException' and 'unhandledRejection'
      * @private
      * @type {undefined | ((e: Error) => void)}
      */
@@ -61,7 +77,7 @@ export class LeafyLogger {
      */
     static loggers: LeafyLogger[];
     /**
-     * Creates new instance of the leafy logger.
+     * Creates new instance of the LeafyLogger.
      * @param {object} o - Options
      * @param {string} o.prefix - Prefix of the logs
      * @param {string} [o.filePath] - Path to log file
@@ -70,10 +86,6 @@ export class LeafyLogger {
         prefix: string;
         filePath?: string;
     });
-    /** @deprecated Use write.prefix instead */
-    set prefix(prefix: string);
-    /** @deprecated Use write.prefix instead */
-    get prefix(): string;
     error: (this: LeafyLogger, ...context?: any[]) => void;
     warn: (this: LeafyLogger, ...context?: any[]) => void;
     info: (this: LeafyLogger, ...context?: any[]) => void;
@@ -153,7 +165,14 @@ export class LeafyLogger {
             level: string;
         }): void;
     };
-    /** @deprecated Use `write` instead */
+    /**
+     * Returns closure that calculates the time elapsed since the function was called and
+     * appends a given postfix to the string value returned.
+     * @param {string} postfix - The `postfix` parameter is a string that will be appended to the time value.
+     * It is optional and defaults to 's' if not provided.
+     */
+    time(postfix?: string): () => string;
+    /** @deprecated Use {@link LeafyLogger.prototype.write write} instead */
     writeLog: ((this: LeafyLogger, { consoleMessage, fileMessage, error, color, level }: {
         consoleMessage?: string;
         fileMessage?: string;
@@ -223,15 +242,20 @@ export class LeafyLogger {
             level: string;
         }): void;
     };
-    /** @deprecated Use write.fileStream instead */
+    /** @deprecated Use {@link LeafyLogger.prototype.write.file write.file} instead */
     stream: fs.WriteStream;
-    /**
-     * Returns functon that calculates time elapsed between creating and call
-     * @param {string} postfix - Postfix using after time, e.g. sec
-     */
-    time(postfix?: string): () => string;
+    /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */
+    set prefix(prefix: string);
+    /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */
+    get prefix(): string;
 }
+/**
+ * - Function used to colorize message
+ */
 export type Colorizer = (...text: string[]) => string;
+/**
+ * - Union type which describes log level (e.g. 'log', 'error', etc)
+ */
 export type LeafyLogLevel = keyof (typeof LeafyLogger)['levels'];
 import fs from 'fs';
 //# sourceMappingURL=LeafyLogger.d.ts.map

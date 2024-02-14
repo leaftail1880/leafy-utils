@@ -2,27 +2,40 @@ import fs from 'fs'
 import util from 'util'
 
 /**
- * @typedef {(...text: string[]) => string} Colorizer
+ * @typedef {(...text: string[]) => string} Colorizer - Function used to colorize message
  */
 
 /**
- * @typedef {keyof (typeof LeafyLogger)['levels']} LeafyLogLevel
+ * @typedef {keyof (typeof LeafyLogger)['levels']} LeafyLogLevel - Union type which describes log level (e.g. 'log', 'error', etc)
  */
 
+/**
+ * Easy log manipulations
+ */
 export class LeafyLogger {
+  /**
+   * Defines basic colors used by logger
+   */
   static colors = {
-    yellow: '\x1B[33m',
-    red: '\x1B[31m',
     reset: '\x1b[0m',
+    red: '\x1B[31m',
+    yellow: '\x1B[33m',
     cyan: '\x1B[36m',
     greenBright: '\x1B[92m',
+    white: '\x1B[37m',
     darkGray: '\x1B[90m',
+    bgRed: '\x1B[41m\x1B[37m',
   }
+
   /**
-   * @satisfies {Record<string, [string, boolean?]>}
+   * Defines the log levels and their corresponding colors.
+   * Each log level is represented by a key-value pair, where the key is the log level name
+   * (e.g., "error", "warn", "info") and the value is an array containing the color
+   * and an optional boolean flag which defines whenether is log level is error or not.
+   * @satisfies {Record<string, [color: string, error?: boolean]>}
    */
   static levels = {
-    error: [this.colors.red, true],
+    error: [this.colors.bgRed + this.colors.white, true],
     warn: [this.colors.yellow, true],
     info: [this.colors.cyan],
     log: [this.colors.cyan],
@@ -46,6 +59,9 @@ export class LeafyLogger {
     }
   }
 
+  /**
+   * Creates different levels of logger functions based on {@link LeafyLogger.levels}
+   */
   static createLevels() {
     /** @type {Record<LeafyLogLevel, ReturnType<(typeof LeafyLogger)['createColoredWriter']>>} */
     // @ts-expect-error
@@ -59,7 +75,7 @@ export class LeafyLogger {
     return levels
   }
 
-  /** @deprecated Use `createColoredWriter` instead */
+  /** @deprecated Use {@link LeafyLogger.createColoredWriter createColoredWriter} instead */
   static createLogWriter = this.createColoredWriter
 
   /**
@@ -79,6 +95,7 @@ export class LeafyLogger {
   }
 
   /**
+   * Handler used to handle 'uncaughtException' and 'unhandledRejection'
    * @private
    * @type {undefined | ((e: Error) => void)}
    */
@@ -106,7 +123,7 @@ export class LeafyLogger {
   static loggers = []
 
   /**
-   * Creates new instance of the leafy logger.
+   * Creates new instance of the LeafyLogger.
    * @param {object} o - Options
    * @param {string} o.prefix - Prefix of the logs
    * @param {string} [o.filePath] - Path to log file
@@ -121,9 +138,6 @@ export class LeafyLogger {
       })
       this.write.file.write('\n')
     }
-
-    /** @deprecated Use write.prefix instead */
-    this.prefix = prefix
 
     const { error, warn, info, log, success, debug } = LeafyLogger.createLevels()
     this.error = error
@@ -252,28 +266,30 @@ export class LeafyLogger {
     }
   )
 
-  /** @deprecated Use `write` instead */
-  writeLog = this.write
-
-  /** @deprecated Use write.fileStream instead */
-  stream = this.write.file
-
-  /** @deprecated Use write.prefix instead */
-  get prefix() {
-    return this.write.prefix
-  }
-
-  /** @deprecated Use write.prefix instead */
-  set prefix(prefix) {
-    this.write.prefix = prefix
-  }
-
   /**
-   * Returns functon that calculates time elapsed between creating and call
-   * @param {string} postfix - Postfix using after time, e.g. sec
+   * Returns closure that calculates the time elapsed since the function was called and
+   * appends a given postfix to the string value returned.
+   * @param {string} postfix - The `postfix` parameter is a string that will be appended to the time value.
+   * It is optional and defaults to 's' if not provided.
    */
   time(postfix = 's') {
     const start = Date.now()
     return () => `${((Date.now() - start) / 1000).toFixed(2)}${postfix}`
+  }
+
+  /** @deprecated Use {@link LeafyLogger.prototype.write write} instead */
+  writeLog = this.write
+
+  /** @deprecated Use {@link LeafyLogger.prototype.write.file write.file} instead */
+  stream = this.write.file
+
+  /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */
+  get prefix() {
+    return this.write.prefix
+  }
+
+  /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */
+  set prefix(prefix) {
+    this.write.prefix = prefix
   }
 }
