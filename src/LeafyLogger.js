@@ -158,7 +158,7 @@ export class LeafyLogger {
         const reset = LeafyLogger.colors.reset
         const date = this.write.formatDate()
         const colorize = this.write.toColorize(color)
-        const coloredPrefix = colorize(this.prefix)
+        const coloredPrefix = colorize(this.write.prefix)
         const std = error && this.write.useStderr ? this.write.stderr : this.write.stdout
 
         std.call(this.write, `${reset}${date} ${coloredPrefix} ${consoleMessage}${reset}`)
@@ -218,7 +218,7 @@ export class LeafyLogger {
       /**
        * Function to write to the stdout. Defaults to console.log
        * Usefull to change when enabling monitoring
-       * @type {(...args: string[]) => void}
+       * @type {(message: string) => void}
        */
       stdout: console.log.bind(console),
 
@@ -226,7 +226,7 @@ export class LeafyLogger {
        * Function to write to the stderr. Defaults to console.error
        * Used only if useStderr is enabled
        * Usefull to change when enabling monitoring
-       * @type {(...args: string[]) => void}
+       * @type {(message: string) => void}
        */
       stderr: console.error.bind(console),
 
@@ -237,8 +237,8 @@ export class LeafyLogger {
       useStderr: false,
 
       /**
-       * Hooks call to write. Replace this with your own function
-       * Usefull for implementing monitorings
+       * Replace this with your own function, it will be called
+       * each time any log level is used. Usefull for implementing monitorings.
        * @param {{
        *   message: string,
        *   colorize: Colorizer
@@ -258,7 +258,15 @@ export class LeafyLogger {
   /** @deprecated Use write.fileStream instead */
   stream = this.write.file
 
-  prefix = this.write.prefix
+  /** @deprecated Use write.prefix instead */
+  get prefix() {
+    return this.write.prefix
+  }
+
+  /** @deprecated Use write.prefix instead */
+  set prefix(prefix) {
+    this.write.prefix = prefix
+  }
 
   /**
    * Returns functon that calculates time elapsed between creating and call

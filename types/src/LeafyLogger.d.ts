@@ -70,7 +70,10 @@ export class LeafyLogger {
         prefix: string;
         filePath?: string;
     });
-    prefix: string;
+    /** @deprecated Use write.prefix instead */
+    set prefix(prefix: string);
+    /** @deprecated Use write.prefix instead */
+    get prefix(): string;
     error: (this: LeafyLogger, ...context?: any[]) => void;
     warn: (this: LeafyLogger, ...context?: any[]) => void;
     info: (this: LeafyLogger, ...context?: any[]) => void;
@@ -114,24 +117,24 @@ export class LeafyLogger {
         /**
          * Function to write to the stdout. Defaults to console.log
          * Usefull to change when enabling monitoring
-         * @type {(...args: string[]) => void}
+         * @type {(message: string) => void}
          */
-        stdout: (...args: string[]) => void;
+        stdout: (message: string) => void;
         /**
          * Function to write to the stderr. Defaults to console.error
          * Used only if useStderr is enabled
          * Usefull to change when enabling monitoring
-         * @type {(...args: string[]) => void}
+         * @type {(message: string) => void}
          */
-        stderr: (...args: string[]) => void;
+        stderr: (message: string) => void;
         /**
          * Whenether to use stderr.
          * @default false
          */
         useStderr: boolean;
         /**
-         * Hooks call to write. Replace this with your own function
-         * Usefull for implementing monitorings
+         * Replace this with your own function, it will be called
+         * each time any log level is used. Usefull for implementing monitorings.
          * @param {{
          *   message: string,
          *   colorize: Colorizer
@@ -184,24 +187,24 @@ export class LeafyLogger {
         /**
          * Function to write to the stdout. Defaults to console.log
          * Usefull to change when enabling monitoring
-         * @type {(...args: string[]) => void}
+         * @type {(message: string) => void}
          */
-        stdout: (...args: string[]) => void;
+        stdout: (message: string) => void;
         /**
          * Function to write to the stderr. Defaults to console.error
          * Used only if useStderr is enabled
          * Usefull to change when enabling monitoring
-         * @type {(...args: string[]) => void}
+         * @type {(message: string) => void}
          */
-        stderr: (...args: string[]) => void;
+        stderr: (message: string) => void;
         /**
          * Whenether to use stderr.
          * @default false
          */
         useStderr: boolean;
         /**
-         * Hooks call to write. Replace this with your own function
-         * Usefull for implementing monitorings
+         * Replace this with your own function, it will be called
+         * each time any log level is used. Usefull for implementing monitorings.
          * @param {{
          *   message: string,
          *   colorize: Colorizer
