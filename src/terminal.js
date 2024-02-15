@@ -218,25 +218,34 @@ execAsync.error = class ExecAsyncError {
 /**
  *
  * @param {object} o - Options
- * @param {(line: string) => void} o.onLine
+ * @param {(line: string) => void | Promise<void>} o.onLine - Function that gets called for each new line
  * @param {(s: string) => void} [o.stdout] - Function that writes to stdout. Defaults to process.stdout.write
  * @param {(s: string) => void} [o.stderr] - Function that writes to stderr. Defaults to process.stderr.write
+ * @param {import('./types.js').PartialPick<readline.ReadLineOptions, 'input'>} [o.options] - Extra options for the readline
  */
 export function readlineWithPersistentInput({
   onLine,
   stdout = process.stdout.write.bind(process.stdout),
   stderr = process.stdout.write.bind(process.stdout),
+  options,
 }) {
   process.stdin.setEncoding('utf-8')
+
+  let processingLine = false
 
   const rl = readline
     .createInterface({
       input: process.stdin,
       output: process.stdout,
+      ...(options ?? {}),
     })
-    .on('line', line => {
+    .on('line', async line => {
       rl.prompt(true)
-      onLine(line)
+      processingLine = true
+      try {
+        await onLine(line)
+      } catch (e) {}
+      processingLine = false
     })
 
   LeafyLogger.patchAll(logger => {
@@ -266,6 +275,7 @@ export function readlineWithPersistentInput({
     readline.clearScreenDown(process.stdout)
 
     out(text)
+    if (processingLine) out('\n')
 
     readline.moveCursor(process.stdout, 0, rows + 1)
     rl.prompt(true)

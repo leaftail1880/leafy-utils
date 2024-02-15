@@ -10,6 +10,10 @@ import util from 'util'
  */
 
 /**
+ * @typedef {ReturnType<(typeof LeafyLogger)['createColoredWriter']>} LeafyColoredWriter
+ */
+
+/**
  * Easy log manipulations
  */
 export class LeafyLogger {
@@ -50,11 +54,11 @@ export class LeafyLogger {
   static createColoredWriter(color, error = false, level = 'log') {
     /**
      * Writes context to console/file using {@link LeafyLogger.write}
-     * @param {...any} [context] - Context to write
+     * @param {any | undefined} [messages] - Messages to write
      * @this {LeafyLogger}
      */
-    return function coloredWriter(...context) {
-      const message = util.formatWithOptions({ colors: true, depth: 100 }, ...context)
+    return function coloredWriter(...messages) {
+      const message = util.formatWithOptions({ colors: true, depth: 100 }, ...messages)
       this.write({ color, consoleMessage: message, fileMessage: message, error, level })
     }
   }
@@ -63,7 +67,7 @@ export class LeafyLogger {
    * Creates different levels of logger functions based on {@link LeafyLogger.levels}
    */
   static createLevels() {
-    /** @type {Record<LeafyLogLevel, ReturnType<(typeof LeafyLogger)['createColoredWriter']>>} */
+    /** @type {Record<LeafyLogLevel, LeafyColoredWriter>} */
     // @ts-expect-error
     const levels = {}
 

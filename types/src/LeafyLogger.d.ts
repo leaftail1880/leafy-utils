@@ -6,6 +6,9 @@
  * @typedef {keyof (typeof LeafyLogger)['levels']} LeafyLogLevel - Union type which describes log level (e.g. 'log', 'error', etc)
  */
 /**
+ * @typedef {ReturnType<(typeof LeafyLogger)['createColoredWriter']>} LeafyColoredWriter
+ */
+/**
  * Easy log manipulations
  */
 export class LeafyLogger {
@@ -42,11 +45,11 @@ export class LeafyLogger {
      * @param {Colorizer | string} color - Color used to color prefix
      * @param {LeafyLogLevel} [level]
      */
-    static createColoredWriter(color: Colorizer | string, error?: boolean, level?: LeafyLogLevel): (this: LeafyLogger, ...context?: any[]) => void;
+    static createColoredWriter(color: Colorizer | string, error?: boolean, level?: LeafyLogLevel): (this: LeafyLogger, ...messages?: any | undefined) => void;
     /**
      * Creates different levels of logger functions based on {@link LeafyLogger.levels}
      */
-    static createLevels(): Record<"error" | "warn" | "info" | "log" | "success" | "debug", (this: LeafyLogger, ...context?: any[]) => void>;
+    static createLevels(): Record<"error" | "warn" | "info" | "log" | "success" | "debug", (this: LeafyLogger, ...messages?: any | undefined) => void>;
     /** @deprecated Use {@link LeafyLogger.createColoredWriter createColoredWriter} instead */
     static createLogWriter: typeof LeafyLogger.createColoredWriter;
     /**
@@ -86,12 +89,12 @@ export class LeafyLogger {
         prefix: string;
         filePath?: string;
     });
-    error: (this: LeafyLogger, ...context?: any[]) => void;
-    warn: (this: LeafyLogger, ...context?: any[]) => void;
-    info: (this: LeafyLogger, ...context?: any[]) => void;
-    log: (this: LeafyLogger, ...context?: any[]) => void;
-    success: (this: LeafyLogger, ...context?: any[]) => void;
-    debug: (this: LeafyLogger, ...context?: any[]) => void;
+    error: (this: LeafyLogger, ...messages?: any | undefined) => void;
+    warn: (this: LeafyLogger, ...messages?: any | undefined) => void;
+    info: (this: LeafyLogger, ...messages?: any | undefined) => void;
+    log: (this: LeafyLogger, ...messages?: any | undefined) => void;
+    success: (this: LeafyLogger, ...messages?: any | undefined) => void;
+    debug: (this: LeafyLogger, ...messages?: any | undefined) => void;
     /**
      * Function writes message to console or file
      * Object provides more write options
@@ -257,5 +260,6 @@ export type Colorizer = (...text: string[]) => string;
  * - Union type which describes log level (e.g. 'log', 'error', etc)
  */
 export type LeafyLogLevel = keyof (typeof LeafyLogger)['levels'];
+export type LeafyColoredWriter = ReturnType<(typeof LeafyLogger)['createColoredWriter']>;
 import fs from 'fs';
 //# sourceMappingURL=LeafyLogger.d.ts.map

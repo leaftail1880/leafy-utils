@@ -79,4 +79,6 @@ export interface CustomParseArgReturn<T extends CustomParseArgsConfig> {
 export type PartialParts<B, ThisArg = B> = {
     [P in keyof B]?: B[P] extends (...param: infer param) => infer ret ? (this: ThisArg, ...param: param) => ret : B[P];
 };
+export type RequiredPick<T extends object, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
+export type PartialPick<T extends object, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 //# sourceMappingURL=types.d.ts.map

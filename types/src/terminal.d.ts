@@ -87,14 +87,16 @@ export function spawnAsync(command: string, options: import('child_process').Spa
 /**
  *
  * @param {object} o - Options
- * @param {(line: string) => void} o.onLine
+ * @param {(line: string) => void | Promise<void>} o.onLine - Function that gets called for each new line
  * @param {(s: string) => void} [o.stdout] - Function that writes to stdout. Defaults to process.stdout.write
  * @param {(s: string) => void} [o.stderr] - Function that writes to stderr. Defaults to process.stderr.write
+ * @param {import('./types.js').PartialPick<readline.ReadLineOptions, 'input'>} [o.options] - Extra options for the readline
  */
-export function readlineWithPersistentInput({ onLine, stdout, stderr, }: {
-    onLine: (line: string) => void;
+export function readlineWithPersistentInput({ onLine, stdout, stderr, options, }: {
+    onLine: (line: string) => void | Promise<void>;
     stdout?: (s: string) => void;
     stderr?: (s: string) => void;
+    options?: import('./types.js').PartialPick<readline.ReadLineOptions, 'input'>;
 }): {
     readline: readline.Interface;
     write: (text: string, out: (s: string) => void) => void;
