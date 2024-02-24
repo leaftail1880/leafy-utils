@@ -4,30 +4,66 @@ import path from 'path'
 import url from 'url'
 
 /**
- * Typed bind
+ * For a given function, creates a bound function that has the same body as the original function. The this object of the bound function is associated with the specified object. Unlike {@link Function.prototype.bind} returns type of the provided function.
  * @template {Function} F
- * @param {F} func
- * @param {unknown} context
+ * @param {F} func - Function to bind
+ * @param {unknown} context - An object to which the this keyword can refer inside the new function.
  * @returns {F}
  */
-export function TypedBind(func, context) {
+export function typedBind(func, context) {
   if (typeof func !== 'function') return func
   return func.bind(context)
 }
 
 /**
- * Returns info about file based on meta url
- * @param {string} metaUrl import.meta.url
+ * @deprecated Use {@link typedBind} instead.
  */
-export function pathInfo(metaUrl) {
-  const __dirname = url.fileURLToPath(new URL('.', metaUrl))
-  const __filename = url.fileURLToPath(metaUrl)
+export const TypedBind = typedBind
+
+/**
+ * Returns information about file based on path, provided by import.meta.url
+ * @param {string} importMetaUrl import.meta.url
+ */
+export function pathInfo(importMetaUrl) {
+  const __dirname = url.fileURLToPath(new URL('.', importMetaUrl))
+  const __filename = url.fileURLToPath(importMetaUrl)
   return {
+    /**
+     * Dirname of the file. For example, for
+     * ```js
+     * import.meta.url === 'file:///C:/Documents/script.js'
+     * ```
+     * it will be `C:\\Documents\\`
+     */
     __dirname,
+    /**
+     * Filename. For example, for
+     * ```js
+     * import.meta.url === 'file:///C:/Documents/script.js'
+     * ```
+     * it will be `C:\\Documents\\script.js`
+     */
     __filename,
+    /**
+     * Whenether if file is entrypoint for node. For example, if file was called by
+     * ```cmd
+     * node ./script.js
+     * ```
+     * Then inside this script
+     * ```js
+     * __cli === true
+     * ```
+     *
+     * If the file is imported by this script, then
+     * ```js
+     * __cli === false
+     * ```
+     *
+     * Similiar how __main__ in python works, isn't it?
+     */
     __cli: process.argv[1] && __filename && path.resolve(__filename).includes(path.resolve(process.argv[1])),
     /**
-     * Returns path joined with __dirname
+     * Returns path joined with {@link __dirname}
      * @param  {...string} to
      */
     relative(...to) {
@@ -106,5 +142,5 @@ export class PromiseHook {
    * @type {Promise<T>}
    */
   promise = new Promise(r => (this.resolve = r))
-  then = TypedBind(this.promise.then, this.promise)
+  then = typedBind(this.promise.then, this.promise)
 }
