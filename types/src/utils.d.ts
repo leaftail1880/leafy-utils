@@ -1,22 +1,53 @@
 /// <reference types="node" />
 /**
- * Typed bind
+ * For a given function, creates a bound function that has the same body as the original function. The this object of the bound function is associated with the specified object. Unlike {@link Function.prototype.bind} returns type of the provided function.
  * @template {Function} F
- * @param {F} func
- * @param {unknown} context
+ * @param {F} func - Function to bind
+ * @param {unknown} context - An object to which the this keyword can refer inside the new function.
  * @returns {F}
  */
-export function TypedBind<F extends Function>(func: F, context: unknown): F;
+export function typedBind<F extends Function>(func: F, context: unknown): F;
 /**
- * Returns info about file based on meta url
- * @param {string} metaUrl import.meta.url
+ * Returns information about file based on path, provided by import.meta.url
+ * @param {string} importMetaUrl import.meta.url
  */
-export function pathInfo(metaUrl: string): {
+export function pathInfo(importMetaUrl: string): {
+    /**
+     * Dirname of the file. For example, for
+     * ```js
+     * import.meta.url === 'file:///C:/Documents/script.js'
+     * ```
+     * it will be `C:\\Documents\\`
+     */
     __dirname: string;
+    /**
+     * Filename. For example, for
+     * ```js
+     * import.meta.url === 'file:///C:/Documents/script.js'
+     * ```
+     * it will be `C:\\Documents\\script.js`
+     */
     __filename: string;
+    /**
+     * Whenether if file is entrypoint for node. For example, if file was called by
+     * ```cmd
+     * node ./script.js
+     * ```
+     * Then inside this script
+     * ```js
+     * __cli === true
+     * ```
+     *
+     * If the file is imported by this script, then
+     * ```js
+     * __cli === false
+     * ```
+     *
+     * Similiar how __main__ in python works, isn't it?
+     */
     __cli: boolean;
     /**
-     * Returns path joined with __dirname
+     * Returns path joined with {@link __dirname}
      * @param  {...string} to
      */
     relative(...to: string[]): string;
@@ -57,6 +88,14 @@ export function addQuotes(text: string, { when, quote }?: {
     when?: boolean;
     quote?: string;
 }): string;
+/**
+ * For a given function, creates a bound function that has the same body as the original function. The this object of the bound function is associated with the specified object. Unlike {@link Function.prototype.bind} returns type of the provided function.
+ * @template {Function} F
+ * @param {F} func - Function to bind
+ * @param {unknown} context - An object to which the this keyword can refer inside the new function.
+ * @returns {F}
+ */
+export function TypedBind<F extends Function>(func: F, context: unknown): F;
 /**
  * Utility class used to hook promise's resolve
  * @template T

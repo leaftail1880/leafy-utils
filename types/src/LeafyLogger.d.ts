@@ -65,15 +65,19 @@ export class LeafyLogger {
      */
     private static handler;
     /**
-     * Function that gets called each time new logger is created
-     * @param {LeafyLogger} logger
+     * @typedef {(logger: LeafyLogger) => void} Patcher
      */
-    static patch(logger: LeafyLogger): void;
+    /**
+     * Functions that gets called each time new logger is created
+     * @private
+     * @type {Patcher[]}
+     */
+    private static patchers;
     /**
      * Patches all existsing loggers and subscribing to creations of new ones
-     * @param {(typeof LeafyLogger)['patch']} fn
+     * @param {Patcher} fn
      */
-    static patchAll(fn: (typeof LeafyLogger)['patch']): void;
+    static patchAll(fn: (logger: LeafyLogger) => void): void;
     /**
      * List of loggers
      * @type {LeafyLogger[]}
@@ -148,26 +152,45 @@ export class LeafyLogger {
          */
         useStderr: boolean;
         /**
-         * Replace this with your own function, it will be called
-         * each time any log level is used. Usefull for implementing monitorings.
-         * @param {{
-         *   message: string,
-         *   colorize: Colorizer
-         *   coloredPrefix: string,
-         *   date: string,
-         *   error: boolean,
-         *   level: string,
-         * }} arg
+         * Hooks function for logger method
+         * @param {LoggerMethodHook} fn - Function that will be called each time any log level is used. Usefull for implementing monitorings.
          */
-        hook(arg: {
+        hook(fn: (arg: {
             message: string;
             colorize: Colorizer;
             coloredPrefix: string;
             date: string;
             error: boolean;
             level: string;
-        }): void;
+        }) => any): void;
+        /**
+         * @private
+         * @type {LoggerMethodHook[]}
+         */
+        hooks: ((arg: {
+            message: string;
+            colorize: Colorizer;
+            coloredPrefix: string;
+            date: string;
+            error: boolean;
+            level: string;
+        }) => any)[];
     };
+    /**
+     * Function that gets called each time any log level is used. Usefull for implementing monitorings.
+     * @callback LoggerMethodHook
+     * @param {LoggerMethodHookArgument} arg
+     */
+    /**
+     * @typedef {{
+     *  message: string;
+     *  colorize: Colorizer;
+     *  coloredPrefix: string;
+     *  date: string;
+     *  error: boolean;
+     *  level: string;
+     * }} LoggerMethodHookArgument
+     */
     /**
      * Returns closure that calculates the time elapsed since the function was called and
      * appends a given postfix to the string value returned.
@@ -225,25 +248,29 @@ export class LeafyLogger {
          */
         useStderr: boolean;
         /**
-         * Replace this with your own function, it will be called
-         * each time any log level is used. Usefull for implementing monitorings.
-         * @param {{
-         *   message: string,
-         *   colorize: Colorizer
-         *   coloredPrefix: string,
-         *   date: string,
-         *   error: boolean,
-         *   level: string,
-         * }} arg
+         * Hooks function for logger method
+         * @param {LoggerMethodHook} fn - Function that will be called each time any log level is used. Usefull for implementing monitorings.
          */
-        hook(arg: {
+        hook(fn: (arg: {
             message: string;
             colorize: Colorizer;
             coloredPrefix: string;
             date: string;
             error: boolean;
             level: string;
-        }): void;
+        }) => any): void;
+        /**
+         * @private
+         * @type {LoggerMethodHook[]}
+         */
+        hooks: ((arg: {
+            message: string;
+            colorize: Colorizer;
+            coloredPrefix: string;
+            date: string;
+            error: boolean;
+            level: string;
+        }) => any)[];
     };
     /** @deprecated Use {@link LeafyLogger.prototype.write.file write.file} instead */
     stream: fs.WriteStream;

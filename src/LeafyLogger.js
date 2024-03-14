@@ -106,18 +106,23 @@ export class LeafyLogger {
   static handler
 
   /**
-   * Function that gets called each time new logger is created
-   * @param {LeafyLogger} logger
+   * @typedef {(logger: LeafyLogger) => void} Patcher
    */
-  static patch(logger) {}
+
+  /**
+   * Functions that gets called each time new logger is created
+   * @private
+   * @type {Patcher[]}
+   */
+  static patchers = []
 
   /**
    * Patches all existsing loggers and subscribing to creations of new ones
-   * @param {(typeof LeafyLogger)['patch']} fn
+   * @param {Patcher} fn
    */
   static patchAll(fn) {
     this.loggers.forEach(logger => fn(logger))
-    this.patch = fn
+    this.patchers.push(fn)
   }
 
   /**
@@ -152,7 +157,7 @@ export class LeafyLogger {
     this.debug = debug
 
     LeafyLogger.loggers.push(this)
-    LeafyLogger.patch(this)
+    LeafyLogger.patchers.forEach(fn => fn(this))
   }
 
   /**
@@ -180,7 +185,10 @@ export class LeafyLogger {
         const std = error && this.write.useStderr ? this.write.stderr : this.write.stdout
 
         std.call(this.write, `${reset}${date} ${coloredPrefix} ${consoleMessage}${reset}`)
-        this.write.hook({ message: consoleMessage, error, coloredPrefix, colorize, date, level })
+
+        /** @type {LoggerMethodHookArgument} */
+        const arg = { message: consoleMessage, error, coloredPrefix, colorize, date, level }
+        this.write.hooks.forEach(hook => hook(arg))
       }
 
       if (fileMessage && this.write.file) {
@@ -255,20 +263,37 @@ export class LeafyLogger {
       useStderr: false,
 
       /**
-       * Replace this with your own function, it will be called
-       * each time any log level is used. Usefull for implementing monitorings.
-       * @param {{
-       *   message: string,
-       *   colorize: Colorizer
-       *   coloredPrefix: string,
-       *   date: string,
-       *   error: boolean,
-       *   level: string,
-       * }} arg
+       * Hooks function for logger method
+       * @param {LoggerMethodHook} fn - Function that will be called each time any log level is used. Usefull for implementing monitorings.
        */
-      hook(arg) {},
+      hook(fn) {
+        this.hooks.push(fn)
+      },
+
+      /**
+       * @private
+       * @type {LoggerMethodHook[]}
+       */
+      hooks: [],
     }
   )
+
+  /**
+   * Function that gets called each time any log level is used. Usefull for implementing monitorings.
+   * @callback LoggerMethodHook
+   * @param {LoggerMethodHookArgument} arg
+   */
+
+  /**
+   * @typedef {{
+   *  message: string;
+   *  colorize: Colorizer;
+   *  coloredPrefix: string;
+   *  date: string;
+   *  error: boolean;
+   *  level: string;
+   * }} LoggerMethodHookArgument
+   */
 
   /**
    * Returns closure that calculates the time elapsed since the function was called and

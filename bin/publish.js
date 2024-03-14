@@ -39,11 +39,13 @@ async function main() {
     Committer.logger.error(`Failed to read ${path.join(process.cwd(), 'package.json')}:`, e)
   }
 
+  if (pkg.content.private) Committer.logger.warn('Package is private, skipping...')
+
   await Committer.build()
   await Committer.commit(args)
 
   if (args.options.n) args.options.publishCommand = 'npm publish'
-  if (args.options.y || pkg.content.packageManager.startsWith('yarn@4'))
+  if (args.options.y || pkg.content.packageManager?.startsWith('yarn@4'))
     args.options.publishCommand = 'yarn npm publish'
   spawn(args.options.publishCommand ?? 'yarn publish --non-interactive', {
     stdio: 'inherit',
