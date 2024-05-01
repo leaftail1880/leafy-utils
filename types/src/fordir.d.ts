@@ -20,7 +20,7 @@ export function fordir(options: dirOptions): Promise<void>;
 export type dirOptions = {
     inputPath: string;
     outputPath: string;
-    extensions: Record<string, boolean | ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>)>;
+    extensions: Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>) | true | false>;
     ignoreFolders?: string[];
     ignoreFiles?: string[];
     silentMode?: boolean | undefined;

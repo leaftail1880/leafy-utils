@@ -62,10 +62,10 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
  * @param {ExecAsyncOptions<T>} [errorHandler]
  * @returns {Promise<T extends true ? ExecAsyncInfo : string>}
  */
-export function execAsync<T extends boolean = false>(command: string, options: Partial<child_process.ExecOptions>, errorHandler?: ExecAsyncOptions<T>): Promise<T extends true ? ExecAsyncInfo : string>;
+export function execAsync<T extends boolean = false>(command: string, options: Partial<child_process.ExecOptions>, { logger: Logger, failedTo, context, ignore, throws, fullResult }?: ExecAsyncOptions<T>): Promise<T extends true ? ExecAsyncInfo : string>;
 export namespace execAsync {
     /**
-     * Higher-order function that returns a new function with default values
+     * High-order function that returns a new function with default values
      * @template {boolean} [T=false]
      * @param {import("child_process").ExecOptions} defaults - Default options object
      * @param {Partial<ExecAsyncOptions<T>>} [errorHandlerDefaults]
@@ -73,6 +73,11 @@ export namespace execAsync {
      */
     export function withDefaults<T_1 extends boolean = false>(defaults: child_process.ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions<T_1>>): (command: string, options: ExecAsyncOptions<T_1>) => Promise<T_1 extends true ? ExecAsyncInfo : string>;
     export { ExecAsyncError as error };
+    /**
+     * Wraps the provided promise into catch block and if execAsync error occurs prints more reliable info
+     * @param {Promise<void>} promise - Promise to wrap
+     */
+    export function wrapForCli(promise: Promise<void>): void;
 }
 /**
  * Spawns given command and resolves on command exit with exit code and successfull status
@@ -118,16 +123,15 @@ export type ExecAsyncInfo = {
     code: number;
 };
 import child_process from 'child_process';
-declare class ExecAsyncError {
-    /** @param {ExecAsyncInfo} p */
-    constructor({ error, stderr, stdout, code }: ExecAsyncInfo);
-    error: child_process.ExecException;
-    stderr: string;
-    stdout: string;
+declare class ExecAsyncError extends Error {
+    /** @param {ExecAsyncInfo & { failedTo?: string }} p */
+    constructor({ error, stderr, stdout, code, failedTo }: ExecAsyncInfo & {
+        failedTo?: string;
+    });
+    command: string;
     code: number;
 }
 import readline from 'readline';
-declare const logger: LeafyLogger;
 import { LeafyLogger } from './LeafyLogger.js';
 export {};
 //# sourceMappingURL=terminal.d.ts.map

@@ -91,7 +91,7 @@ export class CommitManager {
      * @param {T} [config]
      * @returns {Promise<CommitMeta & {options: import('./types.js').CustomParseArgReturn<T>['options']}>}
      */
-    parseArgs<T extends import("./types.js").CustomParseArgsConfig>(helpText?: string, helpOptions?: string, config?: T): Promise<CommitMeta & {
+    parseArgs<T extends import("./types.js").CustomParseArgsConfig>(helpText?: string, helpOptions?: string, config?: T, commandName?: string): Promise<CommitMeta & {
         options: import("./types.js").CustomParsedArgs<T> & {
             help: boolean;
         };
