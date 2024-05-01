@@ -29,7 +29,8 @@ async function main() {
         type: 'boolean',
         short: 'n',
       },
-    }
+    },
+    'publish'
   )
 
   const pkg = new PackageJSON()

@@ -199,7 +199,7 @@ export function spawnAsync(command, options) {
 }
 
 /**
- * Higher-order function that returns a new function with default values
+ * High-order function that returns a new function with default values
  * @template {boolean} [T=false]
  * @param {import("child_process").ExecOptions} defaults - Default options object
  * @param {Partial<ExecAsyncOptions<T>>} [errorHandlerDefaults]
@@ -210,6 +210,9 @@ execAsync.withDefaults =
   (command, options) =>
     execAsync(command, defaults, { ...errorHandlerDefaults, ...options })
 
+/**
+ * ExecAsyncError class access alias
+ */
 execAsync.error = class ExecAsyncError extends Error {
   /** @param {ExecAsyncInfo & { failedTo?: string }} p */
   constructor({ error, stderr, stdout, code, failedTo }) {
@@ -217,6 +220,20 @@ execAsync.error = class ExecAsyncError extends Error {
     this.command = error.cmd
     this.code = code
   }
+}
+
+/**
+ * Wraps the provided promise into catch block and if execAsync error occurs prints more reliable info
+ * @param {Promise<void>} promise - Promise to wrap
+ */
+execAsync.wrapForCli = function (promise) {
+  promise.catch(error => {
+    if (error instanceof execAsync.error) {
+      logger.error(error.message + '\nCommand: ' + error.command + '\n')
+    } else logger.error(error)
+
+    process.exit(1)
+  })
 }
 
 /**

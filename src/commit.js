@@ -203,8 +203,9 @@ export class CommitManager {
     })
 
     if (!result.successfull) {
-      this.logger.error(`'${script}' exited with status code ${result.code}.`)
+      this.logger.warn(`'${script}' exited with status code ${result.code}.`)
     }
+
     return true
   }
   /**
@@ -212,31 +213,29 @@ export class CommitManager {
    * @param {T} [config]
    * @returns {Promise<CommitMeta & {options: import('./types.js').CustomParseArgReturn<T>['options']}>}
    */
-  async parseArgs(helpText = 'Commits dir where it was called.', helpOptions = '', config) {
+  async parseArgs(
+    helpText = 'Commits and pushes to the git repository.',
+    helpOptions = '',
+    config,
+    commandName = 'commit'
+  ) {
     const commandList = ['fix', 'update', 'release']
     const commiter = this
     const parsed = await parseArgs(
       {
         help() {
           console.log(
-            `${helpText}
+            `${commandName} [options] [...info: string]
 
-Usage:
-
-  [option?] [info?]
+${helpText}
 
 Options:
   ${helpOptions}
-  fix - Default commit (0.0.0 -> 0.0.1 [info])
-
-  update - Run this if you adding something new. (0.0.0 -> Update: 0.1.0 [info])
-
-  release - Run this on breaking changes. (0.0.0 -> Release: 1.0.0 [info])
-
-  package - Prints current package.json and exites.
-
-  --help | help - Prints this and exits.
-
+  fix - Default commit which fixes something. (0.0.0 -> 0.0.1 [info])
+  update - Something new was added. (0.0.0 -> Update: 0.1.0 [info])
+  release - Breaking changes were made. (0.0.0 -> Release: 1.0.0 [info])
+  package - Prints the current package.json and exites.
+  --help | help - Prints this text and exits.
 `
           )
           process.exit()
