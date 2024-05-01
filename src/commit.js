@@ -65,7 +65,7 @@ export class CommitManager {
      * @param {import('./terminal.js').ExecAsyncOptions<false>} options
      */
     this.exec = async (command, options) => {
-      const output = await execAsync(command, { cwd }, options)
+      const output = await execAsync(command, { cwd }, { ...options, logger: this.logger })
       this.logger.log(output)
       return output
     }
