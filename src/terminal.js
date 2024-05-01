@@ -142,7 +142,13 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
  * @param {ExecAsyncOptions<T>} [errorHandler]
  * @returns {Promise<T extends true ? ExecAsyncInfo : string>}
  */
-export async function execAsync(command, options, errorHandler) {
+export async function execAsync(
+  command,
+  options,
+  { logger: Logger = logger, failedTo, context = {}, ignore = () => false, throws = true, fullResult } = {
+    failedTo: 'run command',
+  }
+) {
   /** @type {PromiseHook<number>} */
   const codeHook = new PromiseHook()
   /** @type {PromiseHook<Omit<ExecAsyncInfo, 'code'>>} */
@@ -163,20 +169,19 @@ export async function execAsync(command, options, errorHandler) {
     ...info,
   }
 
-  errorHandler.ignore ??= () => false
-  if (code !== 0 && !errorHandler.ignore(info.error, info.stderr)) {
-    errorHandler.logger ??= logger
-    errorHandler.logger.error('Failed to ' + errorHandler.failedTo, {
-      error: info.error,
-      ...(errorHandler.context ?? {}),
-    })
-    if (info.stdout) errorHandler.logger.error(info.stdout)
-    if (info.stderr) errorHandler.logger.error(info.stderr)
-    if (errorHandler.throws ?? true) throw new execAsync.error(result)
+  if (code !== 0 && !ignore(info.error, info.stderr)) {
+    if (throws) {
+      throw new execAsync.error({ failedTo, ...result })
+    } else {
+      Logger.error(`Failed to ${failedTo}`, {
+        ...info,
+        ...context,
+      })
+    }
   }
 
   // @ts-ignore
-  return errorHandler.fullResult ? result : result.stdout
+  return fullResult ? result : result.stdout
 }
 
 /**
@@ -205,12 +210,11 @@ execAsync.withDefaults =
   (command, options) =>
     execAsync(command, defaults, { ...errorHandlerDefaults, ...options })
 
-execAsync.error = class ExecAsyncError {
-  /** @param {ExecAsyncInfo} p */
-  constructor({ error, stderr, stdout, code }) {
-    this.error = error
-    this.stderr = stderr
-    this.stdout = stdout
+execAsync.error = class ExecAsyncError extends Error {
+  /** @param {ExecAsyncInfo & { failedTo?: string }} p */
+  constructor({ error, stderr, stdout, code, failedTo }) {
+    super(`Failed to ${failedTo ?? error.cmd}:\n\n${stderr}${stdout ? '\n\n' + stdout : ''}`)
+    this.command = error.cmd
     this.code = code
   }
 }
@@ -247,6 +251,8 @@ export function readlineWithPersistentInput({
       } catch (e) {}
       processingLine = false
     })
+
+  rl.prompt(true)
 
   LeafyLogger.patchAll(logger => {
     logger.write.stdout = (...args) => {
