@@ -297,10 +297,8 @@ export function readlineWithPersistentInput({
     out('\n')
     readline.clearScreenDown(process.stdout)
 
-    out(text)
+    out(text + '\n')
     if (processingLine) out('\n')
-
-    readline.moveCursor(process.stdout, 0, rows + 1)
     rl.prompt(true)
   }
 
