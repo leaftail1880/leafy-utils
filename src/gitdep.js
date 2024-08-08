@@ -5,7 +5,10 @@ import { fileURLToPath } from 'url'
 import { LeafyLogger } from './LeafyLogger.js'
 import { execAsync } from './terminal.js'
 
-export const logger = new LeafyLogger({ prefix: 'gitdeps' })
+export const gitDepsLogger = new LeafyLogger({ prefix: 'gitdeps' })
+
+/** @deprecated Create logger manually, or use gitDepsLogger explicy */
+export const logger = gitDepsLogger
 
 /**
  * Defines git dependency config
@@ -38,7 +41,7 @@ export async function defineGitDependency(config) {
 
   try {
     const execOptions = { cwd: process.cwd() }
-    const exec = execAsync.withDefaults({}, { logger })
+    const exec = execAsync.withDefaults({}, { logger: gitDepsLogger })
     const remoteName = config.remote.name || filename
 
     const remotes = (await exec(`git remote`, { failedTo: 'get remote list' }))
@@ -52,13 +55,13 @@ export async function defineGitDependency(config) {
         context: { remoteName, ...config.remote },
         ignore: (_, stderr) => {
           if (stderr.includes(`error: remote ${remoteName} already exists`)) {
-            logger.warn(`Remote ${remoteName} already exists, skipping...`)
+            gitDepsLogger.warn(`Remote ${remoteName} already exists, skipping...`)
             return true
           }
         },
       })
 
-      logger.success(`Initialized remote with name ${remoteName} successfully!`)
+      gitDepsLogger.success(`Initialized remote with name ${remoteName} successfully!`)
     }
 
     // Fetch updates
@@ -78,13 +81,13 @@ export async function defineGitDependency(config) {
         failedTo: 'get git dir',
       })
     ).trim()
-    logger.log('Working directory:', execOptions.cwd.replace(process.cwd().replace(/\\/g, '/'), '') || '.')
+    gitDepsLogger.log('Working directory:', execOptions.cwd.replace(process.cwd().replace(/\\/g, '/'), '') || '.')
 
     // Update files
     for (let [remote, options] of Object.entries(config.dependencies)) {
       if (typeof options === 'string') options = { localPath: options }
       if (!options.file && path.parse(options.localPath).ext) {
-        logger.warn(
+        gitDepsLogger.warn(
           `Threating '${options.localPath}' as a file. Replace ${remote} dependency to { localPath: '${options.localPath}', file: true } to remove this warning`
         )
         options.file = true
@@ -99,7 +102,7 @@ export async function defineGitDependency(config) {
         .replace(/\\/g, '/')
         .replace(/^\//g, '')
 
-      logger.info('Local dependency path:', local)
+      gitDepsLogger.info('Local dependency path:', local)
 
       // Define temp path
       const temp = '&&_git_dep_temp_&&'
@@ -153,8 +156,8 @@ export async function defineGitDependency(config) {
       await restoreStagedTemp()
     }
 
-    logger.success('Everything is up to date')
+    gitDepsLogger.success('Everything is up to date')
   } catch (e) {
-    if (!(e instanceof execAsync.error)) logger.error(e)
+    if (!(e instanceof execAsync.error)) gitDepsLogger.error(e)
   }
 }

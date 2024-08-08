@@ -18,6 +18,8 @@
  * @param {import("./types.js").GitDependency} config
  */
 export function defineGitDependency(config: import("./types.js").GitDependency): Promise<void>;
+export const gitDepsLogger: LeafyLogger;
+/** @deprecated Create logger manually, or use gitDepsLogger explicy */
 export const logger: LeafyLogger;
 import { LeafyLogger } from './LeafyLogger.js';
 //# sourceMappingURL=gitdep.d.ts.map
