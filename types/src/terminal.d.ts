@@ -1,5 +1,3 @@
-/// <reference types="node" />
-/// <reference types="node" />
 /**
  * Ask user for input any text
  * @param {string} [text] - Text to show before input like "Count: "
@@ -71,7 +69,7 @@ export namespace execAsync {
      * @param {Partial<ExecAsyncOptions<T>>} [errorHandlerDefaults]
      * @returns {(command: string, options: ExecAsyncOptions<T>) => ReturnType<typeof execAsync<T>>}
      */
-    export function withDefaults<T_1 extends boolean = false>(defaults: child_process.ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions<T_1>>): (command: string, options: ExecAsyncOptions<T_1>) => Promise<T_1 extends true ? ExecAsyncInfo : string>;
+    export function withDefaults<T extends boolean = false>(defaults: import("child_process").ExecOptions, errorHandlerDefaults?: Partial<ExecAsyncOptions<T>>): (command: string, options: ExecAsyncOptions<T>) => ReturnType<typeof execAsync<T>>;
     export { ExecAsyncError as error };
     /**
      * Wraps the provided promise into catch block and if execAsync error occurs prints more reliable info
@@ -85,7 +83,7 @@ export namespace execAsync {
  * @param {import('child_process').SpawnOptions} options
  * @returns {Promise<{code: number, successfull: boolean}>}
  */
-export function spawnAsync(command: string, options: import('child_process').SpawnOptions): Promise<{
+export function spawnAsync(command: string, options: import("child_process").SpawnOptions): Promise<{
     code: number;
     successfull: boolean;
 }>;
@@ -101,7 +99,7 @@ export function readlineWithPersistentInput({ onLine, stdout, stderr, options, }
     onLine: (line: string) => void | Promise<void>;
     stdout?: (s: string) => void;
     stderr?: (s: string) => void;
-    options?: import('./types.js').PartialPick<readline.ReadLineOptions, 'input'>;
+    options?: import("./types.js").PartialPick<readline.ReadLineOptions, "input">;
 }): {
     readline: readline.Interface;
     write: (text: string, out: (s: string) => void) => void;

@@ -116,7 +116,7 @@ export async function readJSON(path) {
  * @param {string} text
  */
 export function toCRLF(text) {
-  return text.replace(/\n/g, '\r\n')
+  return text.replace(/\r?\n/g, '\r\n')
 }
 
 /**

@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * @typedef {(...text: string[]) => string} Colorizer - Function used to colorize message
  */
@@ -286,7 +285,7 @@ export type Colorizer = (...text: string[]) => string;
 /**
  * - Union type which describes log level (e.g. 'log', 'error', etc)
  */
-export type LeafyLogLevel = keyof (typeof LeafyLogger)['levels'];
-export type LeafyColoredWriter = ReturnType<(typeof LeafyLogger)['createColoredWriter']>;
+export type LeafyLogLevel = keyof (typeof LeafyLogger)["levels"];
+export type LeafyColoredWriter = ReturnType<(typeof LeafyLogger)["createColoredWriter"]>;
 import fs from 'fs';
 //# sourceMappingURL=LeafyLogger.d.ts.map

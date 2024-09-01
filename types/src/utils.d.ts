@@ -1,4 +1,3 @@
-/// <reference types="node" />
 /**
  * For a given function, creates a bound function that has the same body as the original function. The this object of the bound function is associated with the specified object. Unlike {@link Function.prototype.bind} returns type of the provided function.
  * @template {Function} F
@@ -60,7 +59,7 @@ export function pathInfo(importMetaUrl: string): {
  * @param {import('./types.js').PartialParts<O>} object
  * @returns {O}
  */
-export function OverTakes<O>(prototype: O, object: import("./types.js").PartialParts<O, O>): O;
+export function OverTakes<O>(prototype: O, object: import("./types.js").PartialParts<O>): O;
 /**
  * The function `writeJSON` writes a JSON object to a file, with the option to replace LF line endings
  * with CRLF line endings.
@@ -70,7 +69,7 @@ export function OverTakes<O>(prototype: O, object: import("./types.js").PartialP
  * It will be converted to a JSON string using `JSON.stringify()` before writing it to the file.
  * @returns {ReturnType<fs['writeFile']>}
  */
-export function writeJSON(path: string, json: object): ReturnType<(typeof fs)['writeFile']>;
+export function writeJSON(path: string, json: object): ReturnType<typeof fs.writeFile>;
 /**
  * Reads and parses json from file
  * @param {string} path - Path to file

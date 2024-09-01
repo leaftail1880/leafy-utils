@@ -38,7 +38,7 @@ export class CommitManager {
      * @param {string} command
      * @param {import('./terminal.js').ExecAsyncOptions<false>} options
      */
-    exec: (command: string, options: import('./terminal.js').ExecAsyncOptions<false>) => Promise<string>;
+    exec: (command: string, options: import("./terminal.js").ExecAsyncOptions<false>) => Promise<string>;
     /**
      * Replace this function if you want to do something before commit
      * @param {CommitHookArgument} arg
@@ -71,7 +71,7 @@ export class CommitManager {
      */
     commit({ type, info, add, origin, branch, pushDryRun, config, }?: CommitMeta & {
         add?: string | false;
-        config?: Record<CommitMeta['type'], [number, string]>;
+        config?: Record<CommitMeta["type"], [number, string]>;
         origin?: string;
         branch?: string;
         pushDryRun?: boolean;
@@ -92,14 +92,12 @@ export class CommitManager {
      * @returns {Promise<CommitMeta & {options: import('./types.js').CustomParseArgReturn<T>['options']}>}
      */
     parseArgs<T extends import("./types.js").CustomParseArgsConfig>(helpText?: string, helpOptions?: string, config?: T, commandName?: string): Promise<CommitMeta & {
-        options: import("./types.js").CustomParsedArgs<T> & {
-            help: boolean;
-        };
+        options: import("./types.js").CustomParseArgReturn<T>["options"];
     }>;
 }
 export const Committer: CommitManager;
 export type CommitMeta = {
-    type?: 'fix' | 'update' | "release";
+    type?: "fix" | "update" | "release";
     info?: string;
 };
 export type CommitHookArgument = {
