@@ -44,7 +44,7 @@ export class LeafyLogger {
      * @param {Colorizer | string} color - Color used to color prefix
      * @param {LeafyLogLevel} [level]
      */
-    static createColoredWriter(color: Colorizer | string, error?: boolean, level?: LeafyLogLevel): (this: LeafyLogger, ...messages?: any | undefined) => void;
+    static createColoredWriter(color: Colorizer | string, error?: boolean, level?: LeafyLogLevel): (...messages?: any | undefined) => void;
     /**
      * Creates different levels of logger functions based on {@link LeafyLogger.levels}
      */
@@ -90,7 +90,7 @@ export class LeafyLogger {
      */
     constructor({ prefix, filePath }: {
         prefix: string;
-        filePath?: string;
+        filePath?: string | undefined;
     });
     error: (this: LeafyLogger, ...messages?: any | undefined) => void;
     warn: (this: LeafyLogger, ...messages?: any | undefined) => void;
@@ -272,7 +272,7 @@ export class LeafyLogger {
         }) => any)[];
     };
     /** @deprecated Use {@link LeafyLogger.prototype.write.file write.file} instead */
-    stream: fs.WriteStream;
+    stream: fs.WriteStream | undefined;
     /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */
     set prefix(prefix: string);
     /** @deprecated Use {@link LeafyLogger.prototype.write.prefix write.prefix} instead */

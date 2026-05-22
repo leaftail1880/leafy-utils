@@ -8,7 +8,7 @@ const logger = new LeafyLogger({ prefix: 'terminal' })
 
 /**
  * Ask user for input any text
- * @param {string} [text] - Text to show before input like "Count: "
+ * @param {string | null} [text] - Text to show before input like "Count: "
  * @returns {Promise<string>}
  */
 export function input(text = null) {
@@ -73,7 +73,7 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
       `Avaible commands:\n${Object.keys(commands)
         .concat(commandList)
         .map(e => `\n   ${e}`)
-        .join('')}\n `
+        .join('')}\n `,
     )
 
     return 0
@@ -117,7 +117,7 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
  * @template {boolean} T
  * @typedef {{
  *   failedTo: string;
- *   ignore?: (error: child_process.ExecException, stderr: string) => boolean
+ *   ignore?: (error: child_process.ExecException | null, stderr: string) => boolean
  *   context?: object;
  *   logger?: LeafyLogger
  *   throws?: boolean
@@ -129,7 +129,7 @@ export async function parseArgs(commands, { commandList = [], defaultCommand = '
  * @typedef {{
  *   stdout: string,
  *   stderr: string,
- *   error: import("child_process").ExecException | null
+ *   error: import("child_process").ExecException
  *   code: number
  * }} ExecAsyncInfo
  */
@@ -147,7 +147,7 @@ export async function execAsync(
   options,
   { logger: Logger = logger, failedTo, context = {}, ignore = () => false, throws = true, fullResult } = {
     failedTo: 'run command',
-  }
+  },
 ) {
   /** @type {PromiseHook<number>} */
   const codeHook = new PromiseHook()
@@ -156,7 +156,11 @@ export async function execAsync(
 
   child_process
     .exec(command, options, (error, stdout, stderr) => {
-      infoHook.resolve({ error, stderr, stdout })
+      infoHook.resolve({
+        error: error ?? new Error('Empty error'),
+        stderr: stderr.toString(),
+        stdout: stdout.toString(),
+      })
     })
     .on('exit', code => {
       codeHook.resolve(code === null ? -1 : code)
@@ -188,7 +192,7 @@ export async function execAsync(
  * Spawns given command and resolves on command exit with exit code and successfull status
  * @param {string} command
  * @param {import('child_process').SpawnOptions} options
- * @returns {Promise<{code: number, successfull: boolean}>}
+ * @returns {Promise<{code: number | null, successfull: boolean}>}
  */
 export function spawnAsync(command, options) {
   return new Promise(resolve => {
@@ -271,6 +275,10 @@ export function readlineWithPersistentInput({
 
   rl.prompt(true)
 
+  let closed = false
+
+  rl.on('close', () => (closed = true))
+
   LeafyLogger.patchAll(logger => {
     logger.write.stdout = (...args) => {
       // Actually logger.write only uses 0 element from args array
@@ -288,7 +296,7 @@ export function readlineWithPersistentInput({
    * @param {(s: string) => void} out
    */
   function writeAndRestorePersistentInput(text, out) {
-    if (!rl) return out(text)
+    if (!rl || closed) return out(text)
 
     // @ts-expect-error
     const rows = rl.prevRows + 1

@@ -44,7 +44,7 @@ export function pathInfo(importMetaUrl: string): {
      *
      * Similiar how __main__ in python works, isn't it?
      */
-    __cli: boolean;
+    __cli: boolean | "";
     /**
      * Returns path joined with {@link __dirname}
      * @param  {...string} to
@@ -84,8 +84,8 @@ export function toCRLF(text: string): string;
  * @param {string} text
  */
 export function addQuotes(text: string, { when, quote }?: {
-    when?: boolean;
-    quote?: string;
+    when?: boolean | undefined;
+    quote?: string | undefined;
 }): string;
 /**
  * For a given function, creates a bound function that has the same body as the original function. The this object of the bound function is associated with the specified object. Unlike {@link Function.prototype.bind} returns type of the provided function.
@@ -110,7 +110,7 @@ export class PromiseHook<T> {
      * @type {Promise<T>}
      */
     promise: Promise<T>;
-    then: <TResult1 = T, TResult2 = never>(onfulfilled?: (value: T) => TResult1 | PromiseLike<TResult1>, onrejected?: (reason: any) => TResult2 | PromiseLike<TResult2>) => Promise<TResult1 | TResult2>;
+    then: <TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | null | undefined) => Promise<TResult1 | TResult2>;
 }
 import fs from 'fs/promises';
 //# sourceMappingURL=utils.d.ts.map

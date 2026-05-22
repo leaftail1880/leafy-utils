@@ -32,7 +32,7 @@ export const logger = gitDepsLogger
 export async function defineGitDependency(config) {
   let filename = 'gitdep'
   try {
-    filename = new Error().stack
+    filename = new Error().stack ?? ''
     filename = filename.split('\n')[2] ?? ''
     filename = filename.replace(/\s+at\s+(?:\w+\s+)?\(?(.+)\)?/, '$1')
     filename = fileURLToPath(filename)
@@ -58,6 +58,7 @@ export async function defineGitDependency(config) {
             gitDepsLogger.warn(`Remote ${remoteName} already exists, skipping...`)
             return true
           }
+          return false
         },
       })
 
@@ -88,7 +89,7 @@ export async function defineGitDependency(config) {
       if (typeof options === 'string') options = { localPath: options }
       if (!options.file && path.parse(options.localPath).ext) {
         gitDepsLogger.warn(
-          `Threating '${options.localPath}' as a file. Replace ${remote} dependency to { localPath: '${options.localPath}', file: true } to remove this warning`
+          `Threating '${options.localPath}' as a file. Replace ${remote} dependency to { localPath: '${options.localPath}', file: true } to remove this warning`,
         )
         options.file = true
       }

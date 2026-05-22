@@ -15,13 +15,13 @@ export class PackageJSON {
      */
     get content(): import("./types.js").Package;
     /**
-     * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
+     * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.content
      */
     read(): Promise<void>;
     /**
      * Reads data if it not initialized
      */
-    init(): Promise<void>;
+    init(): Promise<void> | undefined;
     /**
      * It writes the internal saved data to the package.json file
      * @returns The return value of fs.writeFile()
@@ -31,6 +31,6 @@ export class PackageJSON {
      * If the file has been modified, write the changes to the file
      * @returns promise that resolves after writing file
      */
-    save(): Promise<void>;
+    save(): Promise<void> | undefined;
 }
 //# sourceMappingURL=package.d.ts.map

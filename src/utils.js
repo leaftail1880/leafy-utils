@@ -83,7 +83,7 @@ export function pathInfo(importMetaUrl) {
 export function OverTakes(prototype, object) {
   const prototypeOrigin = Object.setPrototypeOf(
     Object.defineProperties({}, Object.getOwnPropertyDescriptors(prototype)),
-    Object.getPrototypeOf(prototype)
+    Object.getPrototypeOf(prototype),
   )
   Object.setPrototypeOf(object, prototypeOrigin)
   Object.defineProperties(prototype, Object.getOwnPropertyDescriptors(object))
@@ -136,7 +136,9 @@ export class PromiseHook {
    * Function used to resolve promise value
    * @type {(value: T | PromiseLike<T>) => void}
    */
-  resolve
+  resolve = () => {
+    throw new Error('Not initalized')
+  }
   /**
    * Promise being hooked
    * @type {Promise<T>}

@@ -23,6 +23,8 @@ export class PackageJSON {
    * @returns {import("./types.js").Package} A proxy object.
    */
   get content() {
+    if (!this.CONTENT) throw new Error('Not initalized!')
+
     const checkModify = (status = true) => {
       if (status) this.MODIFIED = true
       return status
@@ -45,7 +47,7 @@ export class PackageJSON {
   }
 
   /**
-   * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.data
+   * It reads the package.json file, parses it into a JSON object and saves to local var. To get it, use this.content
    */
   async read() {
     this.CONTENT = await readJSON(this.PACKAGE_PATH)
@@ -63,6 +65,7 @@ export class PackageJSON {
    * @returns The return value of fs.writeFile()
    */
   write() {
+    if (!this.CONTENT) throw new Error('Not initalized!')
     return writeJSON(this.PACKAGE_PATH, this.CONTENT)
   }
 

@@ -95,7 +95,7 @@ export class CommitManager {
    * ```
    * @param {CommitMeta & {
    *   add?: string | false,
-   *   config?: Record<CommitMeta['type'],[number, string]>,
+   *   config?: Record<NonNullable<CommitMeta['type']>,[number, string]>,
    *   origin?: string,
    *   branch?: string
    *   pushDryRun?: boolean,
@@ -178,7 +178,7 @@ export class CommitManager {
     if ('build' in (this.package.content.scripts ?? {})) {
       this.logger.log('Building...')
       const time = this.logger.time()
-      await this.exec(this.package.content.scripts.build, {
+      await this.exec(this.package.content.scripts?.build ?? 'echo noscriptspecified', {
         failedTo: 'build',
       })
       this.logger.success('Done in', time())
@@ -217,7 +217,7 @@ export class CommitManager {
     helpText = 'Commits and pushes to the git repository.',
     helpOptions = '',
     config,
-    commandName = 'commit'
+    commandName = 'commit',
   ) {
     const commandList = ['fix', 'update', 'release']
     const commiter = this
@@ -236,7 +236,7 @@ Options:
   release - Breaking changes were made. (0.0.0 -> Release: 1.0.0 [info])
   package - Prints the current package.json and exites.
   --help | help - Prints this text and exits.
-`
+`,
           )
           process.exit()
         },
@@ -246,7 +246,7 @@ Options:
           process.exit(0)
         },
       },
-      { commandList, defaultCommand: 'fix', options: config }
+      { commandList, defaultCommand: 'fix', options: config },
     )
 
     return {

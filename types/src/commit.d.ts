@@ -30,7 +30,7 @@ export class CommitManager {
      * @param {boolean} [o.prefix] Whenther to include cwd into prefix or not
      */
     constructor(cwd: undefined | string, { prefix }?: {
-        prefix?: boolean;
+        prefix?: boolean | undefined;
     });
     package: PackageJSON;
     logger: LeafyLogger;
@@ -63,7 +63,7 @@ export class CommitManager {
      * ```
      * @param {CommitMeta & {
      *   add?: string | false,
-     *   config?: Record<CommitMeta['type'],[number, string]>,
+     *   config?: Record<NonNullable<CommitMeta['type']>,[number, string]>,
      *   origin?: string,
      *   branch?: string
      *   pushDryRun?: boolean,
@@ -71,7 +71,7 @@ export class CommitManager {
      */
     commit({ type, info, add, origin, branch, pushDryRun, config, }?: CommitMeta & {
         add?: string | false;
-        config?: Record<CommitMeta["type"], [number, string]>;
+        config?: Record<NonNullable<CommitMeta["type"]>, [number, string]>;
         origin?: string;
         branch?: string;
         pushDryRun?: boolean;

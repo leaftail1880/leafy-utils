@@ -21,13 +21,13 @@ export type dirOptions = {
     inputPath: string;
     outputPath: string;
     extensions: Record<string, ((buffer: Buffer, givenpath: string, filename: string) => fileparseReturn | Promise<fileparseReturn>) | true | false>;
-    ignoreFolders?: string[];
-    ignoreFiles?: string[];
+    ignoreFolders?: string[] | undefined;
+    ignoreFiles?: string[] | undefined;
     silentMode?: boolean | undefined;
 };
 export type fileparseReturn = {
     data: string | Buffer;
-    filename?: string;
-    modified?: boolean;
+    filename?: string | undefined;
+    modified?: boolean | undefined;
 };
 //# sourceMappingURL=fordir.d.ts.map

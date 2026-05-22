@@ -85,7 +85,7 @@ export async function fordir(options) {
     if (result.modified)
       writeQuene.push({
         finalPath: givenpath,
-        data: result.data,
+        data: result.data ?? '',
         fileName: result.fileName ?? fileName,
       })
   }
@@ -127,7 +127,7 @@ export async function fordir(options) {
     try {
       await fs.writeFile(fullpath, buffer)
     } catch (e) {
-      if (e.code === 'ENOENT') {
+      if (e instanceof Error && 'code' in e && e.code === 'ENOENT') {
         await fs.mkdir($path, {
           recursive: true,
         })

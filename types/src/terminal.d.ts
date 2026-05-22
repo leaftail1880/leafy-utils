@@ -1,9 +1,9 @@
 /**
  * Ask user for input any text
- * @param {string} [text] - Text to show before input like "Count: "
+ * @param {string | null} [text] - Text to show before input like "Count: "
  * @returns {Promise<string>}
  */
-export function input(text?: string): Promise<string>;
+export function input(text?: string | null): Promise<string>;
 /**
  * Works same as console.log but without \n every new line
  * @param {...any} data See **util.format()** for more info
@@ -29,15 +29,15 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
     args: string[];
     raw_input: string;
 }) => any>, { commandList, defaultCommand, options }?: {
-    commandList?: string[];
-    defaultCommand?: string;
-    options?: T;
+    commandList?: string[] | undefined;
+    defaultCommand?: string | undefined;
+    options?: T | undefined;
 }): Promise<import("./types.js").CustomParseArgReturn<T>>;
 /**
  * @template {boolean} T
  * @typedef {{
  *   failedTo: string;
- *   ignore?: (error: child_process.ExecException, stderr: string) => boolean
+ *   ignore?: (error: child_process.ExecException | null, stderr: string) => boolean
  *   context?: object;
  *   logger?: LeafyLogger
  *   throws?: boolean
@@ -48,7 +48,7 @@ export function parseArgs<T extends import("./types.js").CustomParseArgsConfig>(
  * @typedef {{
  *   stdout: string,
  *   stderr: string,
- *   error: import("child_process").ExecException | null
+ *   error: import("child_process").ExecException
  *   code: number
  * }} ExecAsyncInfo
  */
@@ -81,10 +81,10 @@ export namespace execAsync {
  * Spawns given command and resolves on command exit with exit code and successfull status
  * @param {string} command
  * @param {import('child_process').SpawnOptions} options
- * @returns {Promise<{code: number, successfull: boolean}>}
+ * @returns {Promise<{code: number | null, successfull: boolean}>}
  */
 export function spawnAsync(command: string, options: import("child_process").SpawnOptions): Promise<{
-    code: number;
+    code: number | null;
     successfull: boolean;
 }>;
 /**
@@ -97,9 +97,9 @@ export function spawnAsync(command: string, options: import("child_process").Spa
  */
 export function readlineWithPersistentInput({ onLine, stdout, stderr, options, }: {
     onLine: (line: string) => void | Promise<void>;
-    stdout?: (s: string) => void;
-    stderr?: (s: string) => void;
-    options?: import("./types.js").PartialPick<readline.ReadLineOptions, "input">;
+    stdout?: ((s: string) => void) | undefined;
+    stderr?: ((s: string) => void) | undefined;
+    options?: import("./types.js").PartialPick<readline.ReadLineOptions, "input"> | undefined;
 }): {
     readline: readline.Interface;
     write: (text: string, out: (s: string) => void) => void;
@@ -108,7 +108,7 @@ export function readlineWithPersistentInput({ onLine, stdout, stderr, options, }
 };
 export type ExecAsyncOptions<T extends boolean> = {
     failedTo: string;
-    ignore?: (error: child_process.ExecException, stderr: string) => boolean;
+    ignore?: (error: child_process.ExecException | null, stderr: string) => boolean;
     context?: object;
     logger?: LeafyLogger;
     throws?: boolean;
@@ -117,7 +117,7 @@ export type ExecAsyncOptions<T extends boolean> = {
 export type ExecAsyncInfo = {
     stdout: string;
     stderr: string;
-    error: import("child_process").ExecException | null;
+    error: import("child_process").ExecException;
     code: number;
 };
 import child_process from 'child_process';
@@ -126,7 +126,7 @@ declare class ExecAsyncError extends Error {
     constructor({ error, stderr, stdout, code, failedTo }: ExecAsyncInfo & {
         failedTo?: string;
     });
-    command: string;
+    command: string | undefined;
     code: number;
 }
 import readline from 'readline';
