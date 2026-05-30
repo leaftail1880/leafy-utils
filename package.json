@@ -11,9 +11,9 @@
     "build": "node ./build.js && tsc"
   },
   "bin": {
-    "commit": "./bin/commit.js",
-    "publish": "./bin/publish.js",
-    "why": "./bin/why.js"
+    "commit": "bin/commit.js",
+    "publish": "bin/publish.js",
+    "why": "bin/why.js"
   },
   "files": [
     "src",
