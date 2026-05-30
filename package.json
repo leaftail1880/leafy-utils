@@ -1,6 +1,6 @@
 {
   "name": "leafy-utils",
-  "version": "7.1.7",
+  "version": "7.1.8",
   "description": "Just some of my scripts",
   "main": "exports.js",
   "types": "types/exports.d.ts",
@@ -12,7 +12,8 @@
   },
   "bin": {
     "commit": "./bin/commit.js",
-    "publish": "./bin/publish.js"
+    "publish": "./bin/publish.js",
+    "why": "./bin/why.js"
   },
   "files": [
     "src",
@@ -43,6 +44,7 @@
   },
   "packageManager": "yarn@4.15.0+sha512.07ec708ac11e2eaa4ea2b04cfbb272812f7e74a753f1595eaef4486c663a98306a30cca3e6fc40f7a0b168dcfb3a2490b6a5e0501e20fb69cc36f563dd161c53",
   "dependencies": {
+    "p-limit": "^7.3.0",
     "typescript": "^6.0.3"
   }
 }
